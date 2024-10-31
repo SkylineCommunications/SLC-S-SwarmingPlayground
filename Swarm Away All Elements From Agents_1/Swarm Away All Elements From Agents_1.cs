@@ -51,57 +51,76 @@ dd/mm/2024	1.0.0.1		XXX, Skyline	Initial version
 
 namespace Swarm_Away_All_Elements_From_Agents_1
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Globalization;
-	using System.Text;
-	using Skyline.DataMiner.Automation;
+    using System;
+    using System.Linq;
+    using Cluster_Maintenance;
+    using Skyline.DataMiner.Automation;
 
-	/// <summary>
-	/// Represents a DataMiner Automation script.
-	/// </summary>
-	public class Script
-	{
-		/// <summary>
-		/// The script entry point.
-		/// </summary>
-		/// <param name="engine">Link with SLAutomation process.</param>
-		public void Run(IEngine engine)
-		{
-			try
-			{
-				RunSafe(engine);
-			}
-			catch (ScriptAbortException)
-			{
-				// Catch normal abort exceptions (engine.ExitFail or engine.ExitSuccess)
-				throw; // Comment if it should be treated as a normal exit of the script.
-			}
-			catch (ScriptForceAbortException)
-			{
-				// Catch forced abort exceptions, caused via external maintenance messages.
-				throw;
-			}
-			catch (ScriptTimeoutException)
-			{
-				// Catch timeout exceptions for when a script has been running for too long.
-				throw;
-			}
-			catch (InteractiveUserDetachedException)
-			{
-				// Catch a user detaching from the interactive script by closing the window.
-				// Only applicable for interactive scripts, can be removed for non-interactive scripts.
-				throw;
-			}
-			catch (Exception e)
-			{
-				engine.ExitFail("Run|Something went wrong: " + e);
-			}
-		}
+    /// <summary>
+    /// Represents a DataMiner Automation script.
+    /// </summary>
+    public class Script
+    {
+        private const string PARAM_SOURCE_AGENT_IDS = "Source Agent IDs";
 
-		private void RunSafe(IEngine engine)
-		{
-			// TODO: Define code here
-		}
-	}
+        /// <summary>
+        /// The script entry point.
+        /// </summary>
+        /// <param name="engine">Link with SLAutomation process.</param>
+        public void Run(IEngine engine)
+        {
+            try
+            {
+                RunSafe(engine);
+            }
+            catch (ScriptAbortException)
+            {
+                // Catch normal abort exceptions (engine.ExitFail or engine.ExitSuccess)
+                throw; // Comment if it should be treated as a normal exit of the script.
+            }
+            catch (ScriptForceAbortException)
+            {
+                // Catch forced abort exceptions, caused via external maintenance messages.
+                throw;
+            }
+            catch (ScriptTimeoutException)
+            {
+                // Catch timeout exceptions for when a script has been running for too long.
+                throw;
+            }
+            catch (InteractiveUserDetachedException)
+            {
+                // Catch a user detaching from the interactive script by closing the window.
+                // Only applicable for interactive scripts, can be removed for non-interactive scripts.
+                throw;
+            }
+            catch (Exception e)
+            {
+                engine.ExitFail("Run|Something went wrong: " + e);
+            }
+        }
+
+        private void RunSafe(IEngine engine)
+        {
+            var agentInfos = engine.GetAgents();
+
+            Check.IfSwarmingIsEnabled(agentInfos);
+
+            var elementInfos = engine.GetElements();
+
+            var sourceAgentIds = engine.GetScriptParamInts(PARAM_SOURCE_AGENT_IDS);
+
+            foreach (var sourceAgentId in sourceAgentIds)
+            {
+                if (!agentInfos.Any(agentInfo => agentInfo.ID == sourceAgentId))
+                    throw new ArgumentException($"Source agent '{sourceAgentId}' is not part of the cluster");
+            }
+
+            var clusterConfig = new ClusterConfig(engine, agentInfos, elementInfos);
+
+            clusterConfig.RedistributeAwayFromAgents(sourceAgentIds);
+
+            clusterConfig.SwarmElements();
+        }
+    }
 }

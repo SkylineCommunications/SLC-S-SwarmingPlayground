@@ -13,8 +13,10 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<DefineConstants>$(DefineConstants);DCFv1;DBInfo;ALARM_SQUASHING</DefineConstants>
+		<AssemblyVersion>2024.1031.1613.39570</AssemblyVersion>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.4.11" />
 	</ItemGroup>
 	<ProjectExtensions>
@@ -22,4 +24,5 @@
 		    <UserProperties DisLinkedXmlFile="..\Load Balance Elements By Count.xml" DisProjectType="automationScriptProject" DisLinkId="1" />
         </VisualStudio>
 	</ProjectExtensions>
+	<Import Project="..\Cluster Maintenance\Cluster Maintenance.projitems" Label="Shared" />
 </Project>

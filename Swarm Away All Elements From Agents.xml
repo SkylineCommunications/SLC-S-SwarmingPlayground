@@ -14,6 +14,9 @@
 	</Memory>
 
 	<Parameters>
+		<ScriptParameter id="2" type="string" values="">
+			<Description>Source Agent IDs</Description>
+		</ScriptParameter>
 	</Parameters>
 
 	<Script>

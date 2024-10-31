@@ -55,6 +55,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{0906
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarm Away All Elements From Agents_1", "Swarm Away All Elements From Agents_1\Swarm Away All Elements From Agents_1.csproj", "{81EED96B-CE4E-438E-8EB2-52B90D8A2907}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Cluster Maintenance", "Cluster Maintenance\Cluster Maintenance.shproj", "{3C06A546-AE2F-46D0-A80C-FD4FB97EB6FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,8 +84,14 @@ Global
 		{29D18E58-C816-4006-B264-01AE47142875} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
 		{09064F0D-7C5B-462F-B8AB-D546851EA9CD} = {29D18E58-C816-4006-B264-01AE47142875}
 		{81EED96B-CE4E-438E-8EB2-52B90D8A2907} = {09064F0D-7C5B-462F-B8AB-D546851EA9CD}
+		{3C06A546-AE2F-46D0-A80C-FD4FB97EB6FA} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E861FFDB-4E5A-4035-9E8B-7CA18E775AE9}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Cluster Maintenance\Cluster Maintenance.projitems*{3c06a546-ae2f-46d0-a80c-fd4fb97eb6fa}*SharedItemsImports = 13
+		Cluster Maintenance\Cluster Maintenance.projitems*{81eed96b-ce4e-438e-8eb2-52b90d8a2907}*SharedItemsImports = 5
+		Cluster Maintenance\Cluster Maintenance.projitems*{e603a50d-f871-40cd-9694-b4bda204fc9b}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

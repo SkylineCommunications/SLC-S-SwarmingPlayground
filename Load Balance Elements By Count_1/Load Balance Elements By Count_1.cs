@@ -1,21 +1,19 @@
 namespace LoadBalanceElementsByCount_1
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Globalization;
-	using System.Text;
-	using Skyline.DataMiner.Automation;
-	
-	/// <summary>
-	/// Represents a DataMiner Automation script.
-	/// </summary>
-	public class Script
+    using System;
+	using Cluster_Maintenance;
+    using Skyline.DataMiner.Automation;
+
+    /// <summary>
+    /// Represents a DataMiner Automation script.
+    /// </summary>
+    public class Script
 	{
-		/// <summary>
-		/// The script entry point.
-		/// </summary>
-		/// <param name="engine">Link with SLAutomation process.</param>
-		public void Run(IEngine engine)
+        /// <summary>
+        /// The script entry point.
+        /// </summary>
+        /// <param name="engine">Link with SLAutomation process.</param>
+        public void Run(IEngine engine)
 		{
 			try
 			{
@@ -48,9 +46,19 @@ namespace LoadBalanceElementsByCount_1
 			}
 		}
 
-		private void RunSafe(IEngine engine)
+        private void RunSafe(IEngine engine)
 		{
-			// TODO: Define code here
-		}
+            var agentInfos = engine.GetAgents();
+
+            Check.IfSwarmingIsEnabled(agentInfos);
+
+            var elementInfos = engine.GetElements();
+
+            var clusterConfig = new ClusterConfig(engine, agentInfos, elementInfos);
+
+            clusterConfig.RedistributeByCount();
+
+            clusterConfig.SwarmElements();
+        }
 	}
 }
