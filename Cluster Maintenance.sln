@@ -68,6 +68,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{A227
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Save Cluster Snapshot_1", "Save Cluster Snapshot_1\Save Cluster Snapshot_1.csproj", "{6B2AE737-BBBA-4681-8B3A-097180A9C545}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Swarm Back Elements To Last Snapshot", "Swarm Back Elements To Last Snapshot", "{136BA4BE-F89F-4C60-AB85-FEBF22630ADB}"
+	ProjectSection(SolutionItems) = preProject
+		Swarm Back Elements To Last Snapshot.xml = Swarm Back Elements To Last Snapshot.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{9B0D2F05-38F4-4069-9FB4-6B5D2ED5A998}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarm Back Elements To Last Snapshot_1", "Swarm Back Elements To Last Snapshot_1\Swarm Back Elements To Last Snapshot_1.csproj", "{F876382B-A3FB-44ED-9655-8F2821D96F3A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +99,10 @@ Global
 		{6B2AE737-BBBA-4681-8B3A-097180A9C545}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B2AE737-BBBA-4681-8B3A-097180A9C545}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B2AE737-BBBA-4681-8B3A-097180A9C545}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F876382B-A3FB-44ED-9655-8F2821D96F3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F876382B-A3FB-44ED-9655-8F2821D96F3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F876382B-A3FB-44ED-9655-8F2821D96F3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F876382B-A3FB-44ED-9655-8F2821D96F3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,6 +121,9 @@ Global
 		{C07EB237-D3E8-452C-922E-531E5B17901B} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
 		{A227CD2F-EE06-4891-9A48-39A870A07CA9} = {C07EB237-D3E8-452C-922E-531E5B17901B}
 		{6B2AE737-BBBA-4681-8B3A-097180A9C545} = {A227CD2F-EE06-4891-9A48-39A870A07CA9}
+		{136BA4BE-F89F-4C60-AB85-FEBF22630ADB} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
+		{9B0D2F05-38F4-4069-9FB4-6B5D2ED5A998} = {136BA4BE-F89F-4C60-AB85-FEBF22630ADB}
+		{F876382B-A3FB-44ED-9655-8F2821D96F3A} = {9B0D2F05-38F4-4069-9FB4-6B5D2ED5A998}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E861FFDB-4E5A-4035-9E8B-7CA18E775AE9}
@@ -118,5 +134,6 @@ Global
 		Cluster Maintenance\Cluster Maintenance.projitems*{81eed96b-ce4e-438e-8eb2-52b90d8a2907}*SharedItemsImports = 5
 		Cluster Maintenance\Cluster Maintenance.projitems*{b95b6df7-b1b5-44e1-9aec-7f1117ca0cd3}*SharedItemsImports = 5
 		Cluster Maintenance\Cluster Maintenance.projitems*{e603a50d-f871-40cd-9694-b4bda204fc9b}*SharedItemsImports = 5
+		Cluster Maintenance\Cluster Maintenance.projitems*{f876382b-a3fb-44ed-9655-8f2821d96f3a}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
