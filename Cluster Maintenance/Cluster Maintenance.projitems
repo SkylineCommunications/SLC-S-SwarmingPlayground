@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Check.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClusterConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Info.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Input.cs" />
   </ItemGroup>
