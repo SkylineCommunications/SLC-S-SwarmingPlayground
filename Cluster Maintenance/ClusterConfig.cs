@@ -17,6 +17,14 @@
         private ISwarmingHelper _swarmingHelper;
         private Dictionary<int, List<ElementInfoEventMessage>> _agentToElements;
 
+        /// <summary>
+        /// used in unit tests to verify internal state
+        /// </summary>
+        internal IReadOnlyDictionary<int, List<ElementInfoEventMessage>> CurrentConfig
+        {
+            get => _agentToElements;
+        }
+
         public ClusterConfig(IEngine engine, GetDataMinerInfoResponseMessage[] agentInfos, ElementInfoEventMessage[] elementInfos)
         {
             _engine = engine;
