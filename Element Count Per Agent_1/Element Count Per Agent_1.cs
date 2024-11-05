@@ -60,7 +60,7 @@ namespace Element_Count_Per_Agent_1
     using Skyline.DataMiner.Net.Messages;
 
     [GQIMetaData(Name = "Element Count Per Agent")]
-    public class ElementCountPerAgent : IGQIDataSource, IGQIOnInit
+    public class ElementCountPerAgent : IGQIDataSource, IGQIOnInit, IGQIUpdateable
     {
         private GQIDMS _dms;
         private IGQILogger _logger;
@@ -69,13 +69,14 @@ namespace Element_Count_Per_Agent_1
         private GetDataMinerInfoResponseMessage[] _agentInfos;
         private Dictionary<ElementID, int> _elementToHost = new Dictionary<ElementID, int>();
 
+        private static readonly GQIStringColumn _stateColumn = new GQIStringColumn("Agent State");
         private static readonly GQIIntColumn _countColumn = new GQIIntColumn("Element Count");
 
         private readonly GQIColumn[] _columns = new GQIColumn[]
         {
             new GQIIntColumn("Agent ID"),
             new GQIStringColumn("Agent Name"),
-            new GQIStringColumn("Agent State"),
+            _stateColumn,
             _countColumn,
         };
 
@@ -94,9 +95,18 @@ namespace Element_Count_Per_Agent_1
 
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
+            _logger.Information("GetNextPage");
+
             _agentInfos = LoadAgents();
 
             var elementInfos = LoadElements();
+
+            lock(_elementToHost)
+            {
+                _elementToHost = elementInfos.ToDictionary(
+                    elementInfo => elementInfo.ToElementID(),
+                    elementInfo => elementInfo.HostingAgentID);
+            }
 
             var agentToElementsCount= _agentInfos
                 .GroupJoin
@@ -115,7 +125,7 @@ namespace Element_Count_Per_Agent_1
                 var elementCount = kvp.Value;
 
                 rows.Add(new GQIRow(
-                    agentInfo.ToRowKey(),
+                    agentInfo.ID.ToString(),
                     new[]
                     {
                         new GQICell() { Value = agentInfo.ID, DisplayValue = agentInfo.ID.ToString() },
@@ -129,6 +139,101 @@ namespace Element_Count_Per_Agent_1
             {
                 HasNextPage = false,
             };
+        }
+
+        public void OnStartUpdates(IGQIUpdater updater)
+        {
+            _logger.Information("OnStartUpdates");
+
+            _subscriptionID = "DS-Element-Count-Per-Agent-" + Guid.NewGuid();
+            var connection = _dms.GetConnection();
+
+            connection.OnNewMessage += (obj, args) =>
+            {
+                if ((args == null) || !args.FromSet(_subscriptionID))
+                    return;
+
+                switch (args.Message)
+                {
+                    case ElementInfoEventMessage elementInfo:
+                        {
+                            OnElementInfoEventMessage(updater, elementInfo);
+                            break;
+                        }
+
+                    case DataMinerInfoEvent dataMinerInfo:
+                        {
+                            OnDataMinerInfoEvent(updater, dataMinerInfo);
+                            break;
+                        }
+                }
+            };
+
+            connection.AddSubscription(
+                _subscriptionID,
+                new SubscriptionFilter(typeof(ElementInfoEventMessage)),
+                new SubscriptionFilter(typeof(DataMinerInfoEvent)));
+
+        }
+
+        private void OnElementInfoEventMessage(IGQIUpdater updater, ElementInfoEventMessage elementInfo)
+        {
+            var elementId = elementInfo.ToElementID();
+            var newHost = elementInfo.HostingAgentID;
+
+            _logger.Information($"Observed ElementInfoEvent for '{elementInfo.Name}' ({elementId}){(elementInfo.IsDeleted ? " [Deleted]" : string.Empty)} with host {newHost}");
+
+            lock (_elementToHost)
+            {
+                int oldHost = -1;
+                _elementToHost.TryGetValue(elementId, out oldHost);
+
+                if (oldHost == newHost)
+                    newHost = -1; // not really a new host
+
+                if (elementInfo.IsDeleted)
+                {
+                    // deleted element
+                    _logger.Information($"Removing '{elementInfo.Name}' ({elementId})");
+                    _elementToHost.Remove(elementId);
+                }
+                else if (newHost > 0)
+                {
+                    // new or swarmed element
+                    _logger.Information($"Updating host '{elementInfo.Name}' ({elementId}) to {newHost}");
+                    _elementToHost[elementId] = newHost;
+
+                    // Recalculate count for new host
+                    var newCountNewHost = _elementToHost.Count(kvp => kvp.Value == newHost);
+                    _logger.Information($"Updating new host {newHost} count to {newCountNewHost}");
+                    updater.UpdateCell(newHost.ToString(), _countColumn, newCountNewHost);
+                }
+
+                if (oldHost > 0)
+                {
+                    // Recalculate count for old host
+                    var newCountOldHost = _elementToHost.Count(kvp => kvp.Value == oldHost);
+                    _logger.Information($"Updating old host {oldHost} count to {newCountOldHost}");
+                    updater.UpdateCell(oldHost.ToString(), _countColumn, newCountOldHost);
+                }
+            }
+        }
+
+        private void OnDataMinerInfoEvent(IGQIUpdater updater, DataMinerInfoEvent dataMinerInfo)
+        {
+            _logger.Information($"Observed DataMinerInfoEvent for '{dataMinerInfo.AgentName}' ({dataMinerInfo.DataMinerID}) with state {dataMinerInfo.Raw.ConnectionState}");
+
+            updater.UpdateCell(dataMinerInfo.DataMinerID.ToString(), _stateColumn, dataMinerInfo.Raw.ConnectionState.ToString());
+        }
+
+        public void OnStopUpdates()
+        {
+            _logger.Information("OnStopUpdates");
+            if (_subscriptionID != null)
+            {
+                _dms.GetConnection().RemoveSubscription(_subscriptionID);
+                _subscriptionID = null;
+            }
         }
 
         private GetDataMinerInfoResponseMessage[] LoadAgents()
@@ -184,8 +289,5 @@ namespace Element_Count_Per_Agent_1
     {
         public static ElementID ToElementID(this ElementInfoEventMessage elementInfo)
             => new ElementID(elementInfo.DataMinerID, elementInfo.ElementID);
-
-        public static string ToRowKey(this GetDataMinerInfoResponseMessage agentInfo)
-            => agentInfo.ID.ToString();
     }
 }

@@ -53,7 +53,8 @@ namespace Save_Cluster_Snapshot_1
 {
 	using System;
 	using System.Collections.Generic;
-	using System.Globalization;
+    using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using Cluster_Maintenance;
@@ -107,9 +108,11 @@ namespace Save_Cluster_Snapshot_1
 
 		private void RunSafe(IEngine engine)
 		{
+			var sw = Stopwatch.StartNew();
+
 			// verify if property exists, create otherwise
 			var dms = engine.GetDms();
-            if (!dms.PropertyExists(Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME, PropertyType.Element))
+			if (!dms.PropertyExists(Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME, PropertyType.Element))
 			{
 				dms.CreateProperty(
 					Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME,
@@ -119,16 +122,24 @@ namespace Save_Cluster_Snapshot_1
 					isVisibleInSurveyor: false);
             }
 
-
-            foreach (var element in dms.GetElements())
+			var elements = engine.GetElements();
+			foreach (var element in elements)
 			{
-				if(element.Properties.FirstOrDefault(prop => prop.Definition.Name == Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME) is IWritableProperty theElementProperty)
-				{
-					var homeDataMinerID = element.Host.Id.ToString();
-                    theElementProperty.Value = homeDataMinerID;
-					element.Update();
-                }
+				if (!element.IsSwarmable)
+					continue;
+
+				var engineElement = engine.FindElement(element.DataMinerID, element.ElementID);
+
+				if (engineElement == null)
+					continue;
+
+				engineElement.SetPropertyValue(
+					Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME,
+					element.HostingAgentID.ToString());
             }
+
+			sw.Stop();
+			engine.GenerateInformation($"Took {sw.ElapsedMilliseconds} ms");
         }
     }
 }
