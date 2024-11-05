@@ -15,7 +15,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);DCFv1;DBInfo;ALARM_SQUASHING</DefineConstants>
-    <AssemblyVersion>2024.1104.1032.29161</AssemblyVersion>
+    <AssemblyVersion>2024.1104.1712.21642</AssemblyVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

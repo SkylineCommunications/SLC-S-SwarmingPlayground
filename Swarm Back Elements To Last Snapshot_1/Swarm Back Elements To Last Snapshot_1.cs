@@ -113,6 +113,9 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
 
             var targetAgentIds = engine.GetScriptParamInts(PARAM_TARGET_AGENT_IDS);
 
+			if (!targetAgentIds.Any())
+				throw new ArgumentException("Must provide at least 1 target agent!");
+
             foreach (var targetAgentId in targetAgentIds)
             {
                 if (!agentInfos.Any(agentInfo => agentInfo.ID == targetAgentId))
