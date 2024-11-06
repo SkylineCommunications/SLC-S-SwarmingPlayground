@@ -194,7 +194,7 @@ namespace Element_Count_Per_Agent_1
             var elementId = elementInfo.ToElementID();
             var newHost = elementInfo.HostingAgentID;
 
-            _logger.Information($"Observed ElementInfoEvent for '{elementInfo.Name}' ({elementId}){(elementInfo.IsDeleted ? " [Deleted]" : string.Empty)} with host {newHost}");
+            _logger.Debug($"Observed ElementInfoEvent for '{elementInfo.Name}' ({elementId}){(elementInfo.IsDeleted ? " [Deleted]" : string.Empty)} with host {newHost}");
 
             lock (_elementToHost)
             {
@@ -210,20 +210,20 @@ namespace Element_Count_Per_Agent_1
                 if (elementInfo.IsDeleted)
                 {
                     // deleted element
-                    _logger.Information($"Removing '{elementInfo.Name}' ({elementId})");
+                    _logger.Debug($"Removing '{elementInfo.Name}' ({elementId})");
                     _elementToHost.Remove(elementId);
                 }
                 else if (newHost > 0)
                 {
                     // new or swarmed element
-                    _logger.Information($"Updating host '{elementInfo.Name}' ({elementId}) to {newHost}");
+                    _logger.Debug($"Updating host '{elementInfo.Name}' ({elementId}) to {newHost}");
                     _elementToHost[elementId] = (newHost, elementInfo.IsSwarmable);
 
                     // Recalculate count for new host
                     UpdateHostCounts(updater, newHost);
                 }
 
-                if (oldHost > 0)
+                if (elementInfo.IsDeleted || newHost > 0)
                 {
                     // Recalculate count for old host
                     UpdateHostCounts(updater, oldHost);
@@ -236,6 +236,8 @@ namespace Element_Count_Per_Agent_1
             var totalElements = _elementToHost.Where(element => element.Value.Item1 == hostID).ToArray();
             var nonSwarmableElementsCount = totalElements.Count(element => !element.Value.Item2);
             var swarmableElementsCount = totalElements.Length - nonSwarmableElementsCount;
+
+            _logger.Information($"Updating host {hostID} with counts ({nonSwarmableElementsCount}/{swarmableElementsCount}/{totalElements.Length})");
 
             updater.UpdateCell(hostID.ToString(), _nonSwarmableElementCountColumn, nonSwarmableElementsCount);
             updater.UpdateCell(hostID.ToString(), _swarmableElementCountColumn, swarmableElementsCount);
