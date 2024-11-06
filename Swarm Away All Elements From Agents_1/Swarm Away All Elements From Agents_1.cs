@@ -110,6 +110,12 @@ namespace Swarm_Away_All_Elements_From_Agents_1
 
             var sourceAgentIds = engine.GetScriptParamInts(PARAM_SOURCE_AGENT_IDS);
 
+            if (!sourceAgentIds.Any())
+                throw new ArgumentException("Must at least provide one agent");
+
+            if (!agentInfos.Select(agentinfo => agentinfo.ID).Except(sourceAgentIds).Any())
+                throw new ArgumentException("Cannot swarm away all elements from all agents");
+
             foreach (var sourceAgentId in sourceAgentIds)
             {
                 if (!agentInfos.Any(agentInfo => agentInfo.ID == sourceAgentId))

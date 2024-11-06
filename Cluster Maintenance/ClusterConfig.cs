@@ -77,9 +77,6 @@
                 .Where(bucket => !sourceAgentIds.Contains(bucket.Key))
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            if (!targetBuckets.Any())
-                throw new ArgumentException("Cannot swarm away all elements from all agents");
-
             var sourceBuckets = _agentToElements
                 .Where(bucket => sourceAgentIds.Contains(bucket.Key))
                 .Select(bucket => (bucket.Key, bucket.Value.Where(elementInfo => elementInfo.IsSwarmable).ToList()))

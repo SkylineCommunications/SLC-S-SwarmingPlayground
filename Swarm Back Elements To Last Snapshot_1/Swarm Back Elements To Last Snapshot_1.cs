@@ -51,11 +51,8 @@ dd/mm/2024	1.0.0.1		XXX, Skyline	Initial version
 
 namespace Swarm_Back_Elements_To_Last_Snapshot_1
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Globalization;
+    using System;
     using System.Linq;
-    using System.Text;
     using Cluster_Maintenance;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net;
@@ -112,9 +109,6 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
             Check.IfSwarmingIsEnabled(agentInfos);
 
             var targetAgentIds = engine.GetScriptParamInts(PARAM_TARGET_AGENT_IDS);
-
-			if (!targetAgentIds.Any())
-				throw new ArgumentException("Must provide at least 1 target agent!");
 
             foreach (var targetAgentId in targetAgentIds)
             {
