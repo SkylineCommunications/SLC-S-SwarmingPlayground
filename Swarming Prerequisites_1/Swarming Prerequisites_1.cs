@@ -60,10 +60,13 @@ namespace Swarming_Prerequisites_1
     using Skyline.DataMiner.Net.Swarming;
 
     [GQIMetaData(Name = "Swarming Prerequisites")]
-    public class SwarmingPrerequisites : IGQIDataSource, IGQIOnInit
+    public class SwarmingPrerequisites : IGQIDataSource, IGQIOnInit, IGQIInputArguments
     {
         private GQIDMS _dms;
         private IGQILogger _logger;
+        private bool _analyzeAlarmIDs = false;
+
+        private static readonly GQIBooleanArgument _analyzeAlarmIDsArgument = new GQIBooleanArgument("Analyze AlarmIDs");
 
         private readonly GQIColumn[] _columns = new GQIColumn[]
         {
@@ -77,8 +80,10 @@ namespace Swarming_Prerequisites_1
             new GQIBooleanColumn("No Incompatible Enhanced Services"),
             new GQIBooleanColumn("No Incompatible SLAs"),
 
-            //new GQIBooleanColumn("No Incompatible Scripts"),
+            new GQIBooleanColumn("No Incompatible Scripts"),
             //new GQIBooleanColumn("No Incompatible QActions"),
+
+            new GQIStringColumn("Summary"),
         };
 
         public GQIColumn[] GetColumns() => _columns;
@@ -90,6 +95,16 @@ namespace Swarming_Prerequisites_1
 
             _dms = args.DMS;
             _logger = args.Logger;
+
+            return default;
+        }
+
+        public GQIArgument[] GetInputArguments() => new[] { _analyzeAlarmIDsArgument };
+
+        public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
+        {
+            if (args.TryGetArgumentValue(_analyzeAlarmIDsArgument, out var shoudAnalyzeAlarmIDs))
+                _analyzeAlarmIDs = shoudAnalyzeAlarmIDs;
 
             return default;
         }
@@ -116,6 +131,11 @@ namespace Swarming_Prerequisites_1
                         new GQICell() { Value = prereqResp.LegacyReportsAndDashboardsDisabled, DisplayValue = prereqResp.LegacyReportsAndDashboardsDisabled.ToString() },
                         new GQICell() { Value = prereqResp.NoIncompatibleEnhancedServicesOnDMS, DisplayValue = prereqResp.NoIncompatibleEnhancedServicesOnDMS.ToString() },
                         new GQICell() { Value = prereqResp.NoIncompatibleSLAsOnDMS, DisplayValue = prereqResp.NoIncompatibleSLAsOnDMS.ToString() },
+                        
+                        new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInScripts, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInScripts.ToString() },
+                        //new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions.ToString() },
+                        
+                        new GQICell() { Value = prereqResp.Summary, DisplayValue = prereqResp.Summary },
                     }));
             }
 
@@ -162,8 +182,8 @@ namespace Swarming_Prerequisites_1
                 var req = new SwarmingPrerequisitesCheckRequest()
                 {
                     // skip alarmids
-                    AnalyzeAlarmIDUsage = false,
                     DataMinerID = dataMinerID,
+                    AnalyzeAlarmIDUsage = _analyzeAlarmIDs,
                 };
                 resp = _dms.SendMessages(req);
             }
