@@ -54,6 +54,7 @@ namespace Swarming_Prerequisites_1
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Skyline.DataMiner.Analytics.GenericInterface;
     using Skyline.DataMiner.Net.Exceptions;
     using Skyline.DataMiner.Net.Messages;
@@ -70,9 +71,6 @@ namespace Swarming_Prerequisites_1
 
         private readonly GQIColumn[] _columns = new GQIColumn[]
         {
-            new GQIIntColumn("Agent ID"),
-            new GQIStringColumn("Agent Name"),
-
             new GQIBooleanColumn("Dedicated Clustered Database"),
             new GQIBooleanColumn("No Failover"),
             new GQIBooleanColumn("No Central Database"),
@@ -111,67 +109,33 @@ namespace Swarming_Prerequisites_1
 
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
-            var agentInfos = LoadAgents();
 
-            var rows = new List<GQIRow>(agentInfos.Length);
-            foreach (var agentInfo in agentInfos)
-            {
-                var prereqResp = CheckPrerequisites(agentInfo.ID);
+            var prereqResp = CheckPrerequisites();
 
-                rows.Add(new GQIRow(
-                    agentInfo.ID.ToString(),
-                    new[]
-                    {
-                        new GQICell() { Value = agentInfo.ID, DisplayValue = agentInfo.ID.ToString() },
-                        new GQICell() { Value = agentInfo.AgentName, DisplayValue = agentInfo.AgentName },
+            return new GQIPage(new[] { new GQIRow(
+                new[]
+                {
 
-                        new GQICell() { Value = prereqResp.SupportedDatabase, DisplayValue = prereqResp.SupportedDatabase.ToString() },
-                        new GQICell() { Value = prereqResp.SupportedDMS, DisplayValue = prereqResp.SupportedDMS.ToString() },
-                        new GQICell() { Value = prereqResp.CentralDatabaseNotConfigured, DisplayValue = prereqResp.CentralDatabaseNotConfigured.ToString() },
-                        new GQICell() { Value = prereqResp.LegacyReportsAndDashboardsDisabled, DisplayValue = prereqResp.LegacyReportsAndDashboardsDisabled.ToString() },
-                        new GQICell() { Value = prereqResp.NoIncompatibleEnhancedServicesOnDMS, DisplayValue = prereqResp.NoIncompatibleEnhancedServicesOnDMS.ToString() },
-                        new GQICell() { Value = prereqResp.NoIncompatibleSLAsOnDMS, DisplayValue = prereqResp.NoIncompatibleSLAsOnDMS.ToString() },
+                    new GQICell() { Value = prereqResp.SupportedDatabase, DisplayValue = prereqResp.SupportedDatabase.ToString() },
+                    new GQICell() { Value = prereqResp.SupportedDMS, DisplayValue = prereqResp.SupportedDMS.ToString() },
+                    new GQICell() { Value = prereqResp.CentralDatabaseNotConfigured, DisplayValue = prereqResp.CentralDatabaseNotConfigured.ToString() },
+                    new GQICell() { Value = prereqResp.LegacyReportsAndDashboardsDisabled, DisplayValue = prereqResp.LegacyReportsAndDashboardsDisabled.ToString() },
+                    new GQICell() { Value = prereqResp.NoIncompatibleEnhancedServicesOnDMS, DisplayValue = prereqResp.NoIncompatibleEnhancedServicesOnDMS.ToString() },
+                    new GQICell() { Value = prereqResp.NoIncompatibleSLAsOnDMS, DisplayValue = prereqResp.NoIncompatibleSLAsOnDMS.ToString() },
+
+                    new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInScripts, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInScripts.ToString() },
+                    //new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions.ToString() },
                         
-                        new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInScripts, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInScripts.ToString() },
-                        //new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions.ToString() },
-                        
-                        new GQICell() { Value = prereqResp.Summary, DisplayValue = prereqResp.Summary },
-                    }));
-            }
-
-            return new GQIPage(rows.ToArray())
-            {
-                HasNextPage = false,
-            };
+                    new GQICell() { Value = prereqResp.Summary, DisplayValue = prereqResp.Summary },
+                })})
+                {
+                    HasNextPage = false,
+                };
         }
 
-        private GetDataMinerInfoResponseMessage[] LoadAgents()
-        {
-            if (_dms == null)
-                throw new ArgumentNullException($"{nameof(GQIDMS)} is null.");
 
-            DMSMessage[] resp = null;
-            try
-            {
-                var req = new GetInfoMessage(InfoType.DataMinerInfo);
-                resp = _dms.SendMessages(req);
-            }
-            catch (Exception ex)
-            {
-                throw new DataMinerSecurityException($"Issue occurred in {nameof(SwarmingPrerequisites)} when sending request {nameof(GetInfoMessage)}.{InfoType.DataMinerInfo}: {ex}", ex);
-            }
 
-            if (resp == null || resp.Length == 0)
-                throw new Exception($"Response is null or empty");
-
-            var dmaResponses = resp.OfType<GetDataMinerInfoResponseMessage>().ToArray();
-            if (dmaResponses.Length == 0)
-                throw new Exception($"{nameof(dmaResponses)} is empty");
-
-            return dmaResponses;
-        }
-
-        private SwarmingPrerequisitesCheckResponse CheckPrerequisites(int dataMinerID)
+        private SwarmingPrerequisitesCheckResponse CheckPrerequisites()
         {
             if (_dms == null)
                 throw new ArgumentNullException($"{nameof(GQIDMS)} is null.");
@@ -181,8 +145,6 @@ namespace Swarming_Prerequisites_1
             {
                 var req = new SwarmingPrerequisitesCheckRequest()
                 {
-                    // skip alarmids
-                    DataMinerID = dataMinerID,
                     AnalyzeAlarmIDUsage = _analyzeAlarmIDs,
                 };
                 resp = _dms.SendMessages(req);
