@@ -95,6 +95,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{A352
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarmable Elements_1", "Swarmable Elements_1\Swarmable Elements_1.csproj", "{091810CC-1E64-4F63-AC04-595FAED9CF4A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IsSwarmingEnabled", "IsSwarmingEnabled", "{4EB1E875-ED54-4443-A1D7-995747E45EC4}"
+	ProjectSection(SolutionItems) = preProject
+		IsSwarmingEnabled.xml = IsSwarmingEnabled.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{75A18994-571B-4D0B-A485-E27C8949C0A1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsSwarmingEnabled_1", "IsSwarmingEnabled_1\IsSwarmingEnabled_1.csproj", "{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +138,10 @@ Global
 		{091810CC-1E64-4F63-AC04-595FAED9CF4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{091810CC-1E64-4F63-AC04-595FAED9CF4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{091810CC-1E64-4F63-AC04-595FAED9CF4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +169,9 @@ Global
 		{ADBCF3C6-EB1D-4A10-BA09-2F0E3509CD00} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
 		{A352CC8A-0527-4F37-AF72-C70D2E875702} = {ADBCF3C6-EB1D-4A10-BA09-2F0E3509CD00}
 		{091810CC-1E64-4F63-AC04-595FAED9CF4A} = {A352CC8A-0527-4F37-AF72-C70D2E875702}
+		{4EB1E875-ED54-4443-A1D7-995747E45EC4} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
+		{75A18994-571B-4D0B-A485-E27C8949C0A1} = {4EB1E875-ED54-4443-A1D7-995747E45EC4}
+		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0} = {75A18994-571B-4D0B-A485-E27C8949C0A1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E861FFDB-4E5A-4035-9E8B-7CA18E775AE9}
