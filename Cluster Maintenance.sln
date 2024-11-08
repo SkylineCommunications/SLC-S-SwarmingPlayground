@@ -86,6 +86,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{5C19
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Element Count Per Agent_1", "Element Count Per Agent_1\Element Count Per Agent_1.csproj", "{A5E6DC86-E7EC-4D64-AC8C-10D88EB2E368}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Swarmable Elements", "Swarmable Elements", "{ADBCF3C6-EB1D-4A10-BA09-2F0E3509CD00}"
+	ProjectSection(SolutionItems) = preProject
+		Swarmable Elements.xml = Swarmable Elements.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{A352CC8A-0527-4F37-AF72-C70D2E875702}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarmable Elements_1", "Swarmable Elements_1\Swarmable Elements_1.csproj", "{091810CC-1E64-4F63-AC04-595FAED9CF4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -116,6 +125,10 @@ Global
 		{A5E6DC86-E7EC-4D64-AC8C-10D88EB2E368}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5E6DC86-E7EC-4D64-AC8C-10D88EB2E368}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A5E6DC86-E7EC-4D64-AC8C-10D88EB2E368}.Release|Any CPU.Build.0 = Release|Any CPU
+		{091810CC-1E64-4F63-AC04-595FAED9CF4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{091810CC-1E64-4F63-AC04-595FAED9CF4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{091810CC-1E64-4F63-AC04-595FAED9CF4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{091810CC-1E64-4F63-AC04-595FAED9CF4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -140,6 +153,9 @@ Global
 		{0D67C9EB-DBA7-4D50-9706-A46E0EFABDBD} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
 		{5C1990E7-550C-4288-BA08-1F2EFDF9647A} = {0D67C9EB-DBA7-4D50-9706-A46E0EFABDBD}
 		{A5E6DC86-E7EC-4D64-AC8C-10D88EB2E368} = {5C1990E7-550C-4288-BA08-1F2EFDF9647A}
+		{ADBCF3C6-EB1D-4A10-BA09-2F0E3509CD00} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
+		{A352CC8A-0527-4F37-AF72-C70D2E875702} = {ADBCF3C6-EB1D-4A10-BA09-2F0E3509CD00}
+		{091810CC-1E64-4F63-AC04-595FAED9CF4A} = {A352CC8A-0527-4F37-AF72-C70D2E875702}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E861FFDB-4E5A-4035-9E8B-7CA18E775AE9}
