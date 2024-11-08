@@ -162,8 +162,8 @@ namespace Swarming_Prerequisites_1
                 var req = new SwarmingPrerequisitesCheckRequest()
                 {
                     // skip alarmids
-                    HostingDataMinerID = dataMinerID,
                     AnalyzeAlarmIDUsage = false,
+                    DataMinerID = dataMinerID,
                 };
                 resp = _dms.SendMessages(req);
             }
