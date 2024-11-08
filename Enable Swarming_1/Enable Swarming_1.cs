@@ -51,11 +51,10 @@ dd/mm/2024	1.0.0.1		XXX, Skyline	Initial version
 
 namespace Enable_Swarming_1
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Globalization;
-	using System.Text;
-	using Skyline.DataMiner.Automation;
+    using System;
+    using System.Linq;
+    using Skyline.DataMiner.Automation;
+    using Skyline.DataMiner.Net.Messages;
     using Skyline.DataMiner.Net.Swarming;
 
     /// <summary>
@@ -102,7 +101,15 @@ namespace Enable_Swarming_1
 
 		private void RunSafe(IEngine engine)
 		{
-            engine.SendSLNetMessage(new EnableSwarmingRequest());
+
+			var agentInfo = engine.SendSLNetMessage(new GetInfoMessage(InfoType.LocalDataMinerInfo))
+				.OfType<GetDataMinerInfoResponseMessage>()
+				.First();
+
+			if (agentInfo.IsSwarmingEnabled)
+				return;
+
+			engine.SendSLNetMessage(new EnableSwarmingRequest());
         }
 	}
 }
