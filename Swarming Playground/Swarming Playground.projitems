@@ -6,7 +6,7 @@
     <SharedGUID>3c06a546-ae2f-46d0-a80c-fd4fb97eb6fa</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Cluster_Maintenance</Import_RootNamespace>
+    <Import_RootNamespace>Swarming_Playground</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Check.cs" />

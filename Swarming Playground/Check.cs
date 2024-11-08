@@ -1,5 +1,5 @@
 ﻿
-namespace Cluster_Maintenance
+namespace Swarming_Playground
 {
     using System;
     using Skyline.DataMiner.Net.Messages;

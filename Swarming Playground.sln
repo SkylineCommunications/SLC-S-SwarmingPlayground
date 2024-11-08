@@ -55,9 +55,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{0906
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarm Away All Elements From Agents_1", "Swarm Away All Elements From Agents_1\Swarm Away All Elements From Agents_1.csproj", "{81EED96B-CE4E-438E-8EB2-52B90D8A2907}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Cluster Maintenance", "Cluster Maintenance\Cluster Maintenance.shproj", "{3C06A546-AE2F-46D0-A80C-FD4FB97EB6FA}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Swarming Playground", "Swarming Playground\Swarming Playground.shproj", "{3C06A546-AE2F-46D0-A80C-FD4FB97EB6FA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cluster Maintenance Tests", "Cluster Maintenance Tests\Cluster Maintenance Tests.csproj", "{B95B6DF7-B1B5-44E1-9AEC-7F1117CA0CD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarming Playground Tests", "Swarming Playground Tests\Swarming Playground Tests.csproj", "{B95B6DF7-B1B5-44E1-9AEC-7F1117CA0CD3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Save Cluster Snapshot", "Save Cluster Snapshot", "{C07EB237-D3E8-452C-922E-531E5B17901B}"
 	ProjectSection(SolutionItems) = preProject
@@ -209,11 +209,11 @@ Global
 		SolutionGuid = {E861FFDB-4E5A-4035-9E8B-7CA18E775AE9}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Cluster Maintenance\Cluster Maintenance.projitems*{3c06a546-ae2f-46d0-a80c-fd4fb97eb6fa}*SharedItemsImports = 13
-		Cluster Maintenance\Cluster Maintenance.projitems*{6b2ae737-bbba-4681-8b3a-097180a9c545}*SharedItemsImports = 5
-		Cluster Maintenance\Cluster Maintenance.projitems*{81eed96b-ce4e-438e-8eb2-52b90d8a2907}*SharedItemsImports = 5
-		Cluster Maintenance\Cluster Maintenance.projitems*{b95b6df7-b1b5-44e1-9aec-7f1117ca0cd3}*SharedItemsImports = 5
-		Cluster Maintenance\Cluster Maintenance.projitems*{e603a50d-f871-40cd-9694-b4bda204fc9b}*SharedItemsImports = 5
-		Cluster Maintenance\Cluster Maintenance.projitems*{f876382b-a3fb-44ed-9655-8f2821d96f3a}*SharedItemsImports = 5
+		Swarming Playground\Swarming Playground.projitems*{3c06a546-ae2f-46d0-a80c-fd4fb97eb6fa}*SharedItemsImports = 13
+		Swarming Playground\Swarming Playground.projitems*{6b2ae737-bbba-4681-8b3a-097180a9c545}*SharedItemsImports = 5
+		Swarming Playground\Swarming Playground.projitems*{81eed96b-ce4e-438e-8eb2-52b90d8a2907}*SharedItemsImports = 5
+		Swarming Playground\Swarming Playground.projitems*{b95b6df7-b1b5-44e1-9aec-7f1117ca0cd3}*SharedItemsImports = 5
+		Swarming Playground\Swarming Playground.projitems*{e603a50d-f871-40cd-9694-b4bda204fc9b}*SharedItemsImports = 5
+		Swarming Playground\Swarming Playground.projitems*{f876382b-a3fb-44ed-9655-8f2821d96f3a}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

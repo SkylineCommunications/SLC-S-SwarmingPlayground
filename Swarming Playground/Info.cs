@@ -1,4 +1,4 @@
-﻿namespace Cluster_Maintenance
+﻿namespace Swarming_Playground
 {
     using System.Linq;
     using Skyline.DataMiner.Automation;

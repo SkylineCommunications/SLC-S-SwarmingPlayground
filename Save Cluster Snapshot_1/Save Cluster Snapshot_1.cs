@@ -57,7 +57,7 @@ namespace Save_Cluster_Snapshot_1
     using System.Globalization;
     using System.Linq;
     using System.Text;
-    using Cluster_Maintenance;
+    using Swarming_Playground;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Common;
@@ -112,10 +112,10 @@ namespace Save_Cluster_Snapshot_1
 
 			// verify if property exists, create otherwise
 			var dms = engine.GetDms();
-			if (!dms.PropertyExists(Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME, PropertyType.Element))
+			if (!dms.PropertyExists(Constants.SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME, PropertyType.Element))
 			{
 				dms.CreateProperty(
-					Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME,
+					Constants.SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME,
 					PropertyType.Element,
 					isFilterEnabled: false,
 					isReadOnly: false,
@@ -134,7 +134,7 @@ namespace Save_Cluster_Snapshot_1
 					continue;
 
 				engineElement.SetPropertyValue(
-					Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME,
+					Constants.SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME,
 					element.HostingAgentID.ToString());
             }
 

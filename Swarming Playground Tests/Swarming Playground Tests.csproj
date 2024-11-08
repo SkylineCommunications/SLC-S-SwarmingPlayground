@@ -15,6 +15,6 @@
     <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.4.11" />
   </ItemGroup>
 
-  <Import Project="..\Cluster Maintenance\Cluster Maintenance.projitems" Label="Shared" />
+  <Import Project="..\Swarming Playground\Swarming Playground.projitems" Label="Shared" />
 
 </Project>

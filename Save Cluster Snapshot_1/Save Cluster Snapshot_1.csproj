@@ -26,5 +26,5 @@
       <UserProperties DisLinkedXmlFile="..\Save Cluster Snapshot.xml" DisProjectType="automationScriptProject" DisLinkId="1" />
     </VisualStudio>
   </ProjectExtensions>
-  <Import Project="..\Cluster Maintenance\Cluster Maintenance.projitems" Label="Shared" />
+  <Import Project="..\Swarming Playground\Swarming Playground.projitems" Label="Shared" />
 </Project>

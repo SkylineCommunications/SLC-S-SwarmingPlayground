@@ -53,7 +53,7 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
 {
     using System;
     using System.Linq;
-    using Cluster_Maintenance;
+    using Swarming_Playground;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net;
     using Skyline.DataMiner.Net.Swarming.Helper;
@@ -124,7 +124,7 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
 				if (!elementInfo.IsSwarmable)
 					continue;
 
-				var theProperty = elementInfo.Properties.FirstOrDefault(prop => prop.Name == Constants.CLUSTER_MAINTENACE_HOME_DMA_PROPERTY_NAME);
+				var theProperty = elementInfo.Properties.FirstOrDefault(prop => prop.Name == Constants.SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME);
 				if(theProperty == null)
 					continue;
 

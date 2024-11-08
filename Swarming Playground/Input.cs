@@ -1,4 +1,4 @@
-﻿namespace Cluster_Maintenance
+﻿namespace Swarming_Playground
 {
     using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;

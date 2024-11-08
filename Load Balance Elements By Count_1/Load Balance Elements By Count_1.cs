@@ -1,7 +1,7 @@
 namespace LoadBalanceElementsByCount_1
 {
     using System;
-	using Cluster_Maintenance;
+	using Swarming_Playground;
     using Skyline.DataMiner.Automation;
 
     /// <summary>

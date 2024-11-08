@@ -3,9 +3,9 @@
 	<Name>Load Balance Elements By Count</Name>
 	<Description></Description>
 	<Type>Automation</Type>
-	<Author>RobbeDG</Author>
+	<Author>SKYLINE2\RobbeDG</Author>
 	<CheckSets>FALSE</CheckSets>
-	<Folder>Cluster Maintenance</Folder>
+	<Folder>Swarming Playground</Folder>
 
 	<Protocols>
 	</Protocols>

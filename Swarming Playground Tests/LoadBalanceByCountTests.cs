@@ -2,7 +2,7 @@ namespace LoadBalanceTests
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Cluster_Maintenance;
+    using Swarming_Playground;
     using Moq;
     using NUnit.Framework;
     using Skyline.DataMiner.Automation;
