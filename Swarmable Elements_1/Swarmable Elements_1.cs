@@ -250,6 +250,8 @@ namespace Swarmable_Elements_1
         {
             if (elementStateEvent.TimeoutSubState == TimeoutSubState.IsSwarming)
                 return "Swarming";
+            else if (elementStateEvent.TimeoutSubState == TimeoutSubState.HostingAgentDisconnected)
+                return "Unavailable";
             else if (elementStateEvent.State == ElementState.Active && !elementStateEvent.IsElementStartupComplete)
                 return "Starting";
             else
