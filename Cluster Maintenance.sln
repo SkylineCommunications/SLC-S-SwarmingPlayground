@@ -104,6 +104,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{75A1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IsSwarmingEnabled_1", "IsSwarmingEnabled_1\IsSwarmingEnabled_1.csproj", "{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Swarming Prerequisites", "Swarming Prerequisites", "{540C15C8-6EB5-45E9-976D-DDCC7D46ECC5}"
+	ProjectSection(SolutionItems) = preProject
+		Swarming Prerequisites.xml = Swarming Prerequisites.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{379E6B18-2F08-41FE-86E3-F823B6AF9350}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarming Prerequisites_1", "Swarming Prerequisites_1\Swarming Prerequisites_1.csproj", "{DD776BB9-8784-48AB-8831-7CDBFE0D9B33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +151,10 @@ Global
 		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD776BB9-8784-48AB-8831-7CDBFE0D9B33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD776BB9-8784-48AB-8831-7CDBFE0D9B33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD776BB9-8784-48AB-8831-7CDBFE0D9B33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD776BB9-8784-48AB-8831-7CDBFE0D9B33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -172,6 +185,9 @@ Global
 		{4EB1E875-ED54-4443-A1D7-995747E45EC4} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
 		{75A18994-571B-4D0B-A485-E27C8949C0A1} = {4EB1E875-ED54-4443-A1D7-995747E45EC4}
 		{072FDAFE-4B09-44E3-8279-DB4D7B6B22B0} = {75A18994-571B-4D0B-A485-E27C8949C0A1}
+		{540C15C8-6EB5-45E9-976D-DDCC7D46ECC5} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
+		{379E6B18-2F08-41FE-86E3-F823B6AF9350} = {540C15C8-6EB5-45E9-976D-DDCC7D46ECC5}
+		{DD776BB9-8784-48AB-8831-7CDBFE0D9B33} = {379E6B18-2F08-41FE-86E3-F823B6AF9350}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E861FFDB-4E5A-4035-9E8B-7CA18E775AE9}
