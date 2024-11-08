@@ -1,9 +1,11 @@
 ﻿namespace Cluster_Maintenance
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net;
     using Skyline.DataMiner.Net.Messages;
@@ -14,7 +16,6 @@
     public class ClusterConfig
     {
         private IEngine _engine;
-        private ISwarmingHelper _swarmingHelper;
         private Dictionary<int, List<ElementInfoEventMessage>> _agentToElements;
 
         /// <summary>
@@ -28,7 +29,6 @@
         public ClusterConfig(IEngine engine, GetDataMinerInfoResponseMessage[] agentInfos, ElementInfoEventMessage[] elementInfos)
         {
             _engine = engine;
-            _swarmingHelper = SwarmingHelper.Create(engine.SendSLNetMessage);
 
             _agentToElements = agentInfos
                 .GroupJoin
@@ -43,23 +43,24 @@
 
         public void SwarmElements()
         {
-            var failures = new List<SwarmingResult>();
-            foreach (var kvp in _agentToElements)
+            var failures = new ConcurrentBag<SwarmingResult>();
+            Parallel.ForEach(_agentToElements, kvp =>
             {
                 var targetAgentId = kvp.Key;
                 var elements = kvp.Value.Where(element => element.HostingAgentID != targetAgentId).ToList();
 
                 if (!elements.Any())
-                    continue; // this agent does not receive any new elements
+                    return; // this agent does not receive any new elements
 
                 _engine.Log($"Swarming elements to agent {targetAgentId}: " + string.Join(", ", elements.Select(info => info.Name)));
 
-                var responses = _swarmingHelper
+                var responses = SwarmingHelper.Create(_engine.SendSLNetMessage)
                     .SwarmElements(elements.Select(info => new ElementID(info.DataMinerID, info.ElementID)).ToArray())
                     .ToAgent(targetAgentId);
 
-                failures.AddRange(responses.Where(resp => !resp.Success));
-            }
+                foreach(var failure in responses.Where(resp => !resp.Success))
+                    failures.Add(failure);
+            });
 
             if (failures.Any())
             {
