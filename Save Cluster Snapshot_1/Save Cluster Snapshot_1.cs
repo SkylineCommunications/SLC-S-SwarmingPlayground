@@ -63,6 +63,7 @@ namespace Save_Cluster_Snapshot_1
     using Skyline.DataMiner.Core.DataMinerSystem.Common;
     using Skyline.DataMiner.Core.DataMinerSystem.Common.Properties;
     using Skyline.DataMiner.Net.PerformanceIndication;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Represents a DataMiner Automation script.
@@ -108,6 +109,8 @@ namespace Save_Cluster_Snapshot_1
 
 		private void RunSafe(IEngine engine)
 		{
+			engine.SetFlag(RunTimeFlags.NoCheckingSets);
+
 			var sw = Stopwatch.StartNew();
 
 			// verify if property exists, create otherwise
@@ -122,21 +125,22 @@ namespace Save_Cluster_Snapshot_1
 					isVisibleInSurveyor: false);
             }
 
-			var elements = engine.GetElements();
-			foreach (var element in elements)
-			{
-				if (!element.IsSwarmable)
-					continue;
+			var elements = engine
+				.GetElements()
+				.Where(elementInfo => elementInfo.IsSwarmable)
+				.ToArray();
 
+			Parallel.ForEach(elements, element =>
+			{
 				var engineElement = engine.FindElement(element.DataMinerID, element.ElementID);
 
 				if (engineElement == null)
-					continue;
+					return;
 
 				engineElement.SetPropertyValue(
 					Constants.SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME,
 					element.HostingAgentID.ToString());
-            }
+			});
 
 			sw.Stop();
 			engine.GenerateInformation($"Took {sw.ElapsedMilliseconds} ms");
