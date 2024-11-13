@@ -52,9 +52,7 @@ dd/mm/2024	1.0.0.1		XXX, Skyline	Initial version
 namespace Swarming_Prerequisites_1
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
     using Skyline.DataMiner.Analytics.GenericInterface;
     using Skyline.DataMiner.Net.Exceptions;
     using Skyline.DataMiner.Net.Messages;
@@ -71,6 +69,8 @@ namespace Swarming_Prerequisites_1
 
         private readonly GQIColumn[] _columns = new GQIColumn[]
         {
+            new GQIBooleanColumn("Swarming Enabled"),
+
             new GQIBooleanColumn("Dedicated Clustered Database"),
             new GQIBooleanColumn("No Failover"),
             new GQIBooleanColumn("No Central Database"),
@@ -109,12 +109,15 @@ namespace Swarming_Prerequisites_1
 
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
-
             var prereqResp = CheckPrerequisites();
+            var isSwarmingEnabled = _dms.SendMessages(new GetInfoMessage(InfoType.LocalDataMinerInfo))
+                .OfType<GetDataMinerInfoResponseMessage>()
+                .FirstOrDefault()?.IsSwarmingEnabled ?? false;
 
             return new GQIPage(new[] { new GQIRow(
                 new[]
                 {
+                    new GQICell() { Value = isSwarmingEnabled, DisplayValue = isSwarmingEnabled.ToString() },
 
                     new GQICell() { Value = prereqResp.SupportedDatabase, DisplayValue = prereqResp.SupportedDatabase.ToString() },
                     new GQICell() { Value = prereqResp.SupportedDMS, DisplayValue = prereqResp.SupportedDMS.ToString() },
