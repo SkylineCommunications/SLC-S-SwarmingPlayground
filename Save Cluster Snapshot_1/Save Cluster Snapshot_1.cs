@@ -111,8 +111,6 @@ namespace Save_Cluster_Snapshot_1
 		{
 			engine.SetFlag(RunTimeFlags.NoCheckingSets);
 
-			var sw = Stopwatch.StartNew();
-
 			// verify if property exists, create otherwise
 			var dms = engine.GetDms();
 			if (!dms.PropertyExists(Constants.SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME, PropertyType.Element))
@@ -128,6 +126,11 @@ namespace Save_Cluster_Snapshot_1
 			var elements = engine
 				.GetElements()
 				.Where(elementInfo => elementInfo.IsSwarmable)
+				.Where(elementInfo =>
+				{
+					var propValue = elementInfo.GetPropertyValue(Constants.SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME);
+					return propValue == null || propValue != elementInfo.HostingAgentID.ToString();
+                })
 				.ToArray();
 
 			Parallel.ForEach(elements, element =>
@@ -141,9 +144,6 @@ namespace Save_Cluster_Snapshot_1
 					Constants.SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME,
 					element.HostingAgentID.ToString());
 			});
-
-			sw.Stop();
-			engine.GenerateInformation($"Took {sw.ElapsedMilliseconds} ms");
         }
     }
 }
