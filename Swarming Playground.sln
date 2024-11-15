@@ -122,6 +122,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{C11E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Element Home Agents_1", "Element Home Agents_1\Element Home Agents_1.csproj", "{124F7509-256B-410C-941F-5953254ADF27}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Swarm Elements", "Swarm Elements", "{DA6FCF9A-88E9-47D4-97F4-B3896A96C381}"
+	ProjectSection(SolutionItems) = preProject
+		Swarm Elements.xml = Swarm Elements.xml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Actions", "Actions", "{F8B38ED1-971D-4689-AE24-8D75079C3B1A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarm Elements_1", "Swarm Elements_1\Swarm Elements_1.csproj", "{2C0ACAD8-A228-4269-9344-284E92EA17EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -168,6 +177,10 @@ Global
 		{124F7509-256B-410C-941F-5953254ADF27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{124F7509-256B-410C-941F-5953254ADF27}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{124F7509-256B-410C-941F-5953254ADF27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C0ACAD8-A228-4269-9344-284E92EA17EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C0ACAD8-A228-4269-9344-284E92EA17EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C0ACAD8-A228-4269-9344-284E92EA17EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C0ACAD8-A228-4269-9344-284E92EA17EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -204,11 +217,15 @@ Global
 		{3A5F2A36-5855-4583-ADC8-C6F6F73A3F1E} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
 		{C11EE02A-2CF9-4674-9853-49DC95F91256} = {3A5F2A36-5855-4583-ADC8-C6F6F73A3F1E}
 		{124F7509-256B-410C-941F-5953254ADF27} = {C11EE02A-2CF9-4674-9853-49DC95F91256}
+		{DA6FCF9A-88E9-47D4-97F4-B3896A96C381} = {A2A8A27B-96A9-4759-AFA8-344A48B16CD3}
+		{F8B38ED1-971D-4689-AE24-8D75079C3B1A} = {DA6FCF9A-88E9-47D4-97F4-B3896A96C381}
+		{2C0ACAD8-A228-4269-9344-284E92EA17EB} = {F8B38ED1-971D-4689-AE24-8D75079C3B1A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E861FFDB-4E5A-4035-9E8B-7CA18E775AE9}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Swarming Playground\Swarming Playground.projitems*{2c0acad8-a228-4269-9344-284e92ea17eb}*SharedItemsImports = 5
 		Swarming Playground\Swarming Playground.projitems*{3c06a546-ae2f-46d0-a80c-fd4fb97eb6fa}*SharedItemsImports = 13
 		Swarming Playground\Swarming Playground.projitems*{6b2ae737-bbba-4681-8b3a-097180a9c545}*SharedItemsImports = 5
 		Swarming Playground\Swarming Playground.projitems*{81eed96b-ce4e-438e-8eb2-52b90d8a2907}*SharedItemsImports = 5
