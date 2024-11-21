@@ -132,7 +132,7 @@ namespace Swarmable_Elements_1
 
                 var elementID = new ElementID(elementStateEvent.DataMinerID, elementStateEvent.ElementID);
 
-                _logger.Debug($"Observed event for {elementID} with state '{elementStateEvent.State}' and host {elementStateEvent.HostingAgentID}");
+                _logger.Debug($"Observed event for {elementID} with State '{elementStateEvent.State}' and TimeoutSubState '{elementStateEvent.TimeoutSubState}' and host {elementStateEvent.HostingAgentID}");
 
                 lock (_elementToHostAndState)
                 {
