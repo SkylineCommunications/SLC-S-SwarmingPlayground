@@ -1,6 +1,5 @@
 ﻿namespace Swarming_Playground
 {
-    using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
@@ -11,17 +10,16 @@
     using Skyline.DataMiner.Net.Messages;
     using Skyline.DataMiner.Net.Swarming;
     using Skyline.DataMiner.Net.Swarming.Helper;
-    using Skyline.DataMiner.Net.Swarming.Helper.Interfaces;
 
     public class ClusterConfig
     {
         private IEngine _engine;
-        private Dictionary<int, List<ElementInfoEventMessage>> _agentToElements;
+        private Dictionary<GetDataMinerInfoResponseMessage, List<ElementInfoEventMessage>> _agentToElements;
 
         /// <summary>
         /// used in unit tests to verify internal state
         /// </summary>
-        internal IReadOnlyDictionary<int, List<ElementInfoEventMessage>> CurrentConfig
+        internal IReadOnlyDictionary<GetDataMinerInfoResponseMessage, List<ElementInfoEventMessage>> CurrentConfig
         {
             get => _agentToElements;
         }
@@ -36,7 +34,7 @@
                         elementInfos.GroupBy(elementInfo => elementInfo.HostingAgentID),
 						agentInfo => agentInfo.ID,
 						elementInfoGroup => elementInfoGroup.Key,
-						(agentInfo, elementInfoGroups) => (agentInfo.ID, elementInfoGroups.SelectMany(x => x).ToList())
+						(agentInfo, elementInfoGroups) => (agentInfo, elementInfoGroups.SelectMany(x => x).ToList())
 					)
 				.ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
         }
@@ -44,9 +42,14 @@
         public void SwarmElements()
         {
             var failures = new ConcurrentBag<SwarmingResult>();
-            Parallel.ForEach(_agentToElements, kvp =>
+
+            // can only swarm to healthy agents
+            var swarmActions = _agentToElements
+                .Where(kvp => kvp.Key.ConnectionState == DataMinerAgentConnectionState.Normal);
+
+            Parallel.ForEach(swarmActions, kvp =>
             {
-                var targetAgentId = kvp.Key;
+                var targetAgentId = kvp.Key.ID;
                 var elements = kvp.Value.Where(element => element.HostingAgentID != targetAgentId).ToList();
 
                 if (!elements.Any())
@@ -75,11 +78,12 @@
         public void RedistributeAwayFromAgents(int[] sourceAgentIds)
         {
             var targetBuckets = _agentToElements
-                .Where(bucket => !sourceAgentIds.Contains(bucket.Key))
+                .Where(bucket => bucket.Key.ConnectionState == DataMinerAgentConnectionState.Normal
+                        && !sourceAgentIds.Contains(bucket.Key.ID))
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             var sourceBuckets = _agentToElements
-                .Where(bucket => sourceAgentIds.Contains(bucket.Key))
+                .Where(bucket => sourceAgentIds.Contains(bucket.Key.ID))
                 .Select(bucket => (bucket.Key, bucket.Value.Where(elementInfo => elementInfo.IsSwarmable).ToList()))
                 .Where(bucket => bucket.Item2.Any()) // remove empty buckets for agents that don't have any swarmable elements
                 .ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
@@ -120,7 +124,10 @@
 
             while (leftoverBuckets.Any())
             {
-                var smallestBucketSize = currentBuckets.Min(bucket => bucket.Value.Count);
+                var smallestBucketSize = currentBuckets
+                    .Where(bucket => bucket.Key.ConnectionState == DataMinerAgentConnectionState.Normal) // can only target healthy agents
+                    .Min(bucket => bucket.Value.Count);
+
                 var smallestBuckets = currentBuckets.Where(bucket => bucket.Value.Count == smallestBucketSize);
 
                 // of all the buckets with the smallest count, prefer the one that still has elements already hosted on it

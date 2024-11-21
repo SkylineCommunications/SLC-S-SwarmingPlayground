@@ -55,6 +55,7 @@ namespace Swarm_Away_All_Elements_From_Agents_1
     using System.Linq;
     using Swarming_Playground;
     using Skyline.DataMiner.Automation;
+    using Skyline.DataMiner.Net.Messages;
 
     /// <summary>
     /// Represents a DataMiner Automation script.
@@ -115,6 +116,9 @@ namespace Swarm_Away_All_Elements_From_Agents_1
 
             if (!agentInfos.Select(agentinfo => agentinfo.ID).Except(sourceAgentIds).Any())
                 throw new ArgumentException("Cannot swarm away all elements from all agents");
+
+            if (!agentInfos.Where(agentInfo => agentInfo.ConnectionState == DataMinerAgentConnectionState.Normal).Select(agentinfo => agentinfo.ID).Except(sourceAgentIds).Any())
+                throw new ArgumentException("Cannot swarm away all elements because there are no healthy agents available");
 
             foreach (var sourceAgentId in sourceAgentIds)
             {
