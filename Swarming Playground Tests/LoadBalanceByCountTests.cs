@@ -110,13 +110,13 @@ namespace LoadBalanceTests
             var counts = output.Select(bucket => bucket.Value.Count).ToArray();
             Assert.That(counts, Is.EquivalentTo(expectedElementCounts));
 
-            var numberOfSwarms = output.Sum(bucket => bucket.Value.Where(element => element.HostingAgentID != bucket.Key).Count());
+            var numberOfSwarms = output.Sum(bucket => bucket.Value.Where(element => element.HostingAgentID != bucket.Key.ID).Count());
             Assert.That(numberOfSwarms, Is.EqualTo(expectedNumberOfSwarms));
 
             // there should always be at least one agent that does not receive any new elements (all elements are already on the correct host)
             // otherwise there is an optimization possible where you move the swarmed elements around until
             // one ends up again at its original host
-            Assert.That(output.Any(agentBucket => agentBucket.Value.All(element => element.HostingAgentID == agentBucket.Key)));
+            Assert.That(output.Any(agentBucket => agentBucket.Value.All(element => element.HostingAgentID == agentBucket.Key.ID)));
         }
 
         private static GetDataMinerInfoResponseMessage[] Agents(params int[] ids)
