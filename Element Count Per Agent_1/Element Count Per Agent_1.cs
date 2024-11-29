@@ -66,8 +66,9 @@ namespace Element_Count_Per_Agent_1
         private IGQILogger _logger;
         private string _subscriptionID;
 
-        private GetDataMinerInfoResponseMessage[] _agentInfos;
-        private Dictionary<ElementID, (int, bool)> _elementToHost = new Dictionary<ElementID, (int, bool)>();
+        private object _dictLock = new object();
+        private Dictionary<int, GetDataMinerInfoResponseMessage> _agentInfoCache = new Dictionary<int, GetDataMinerInfoResponseMessage>();
+        private Dictionary<ElementID, ElementInfoEventMessage> _elementInfoCache = new Dictionary<ElementID, ElementInfoEventMessage>();
 
         private static readonly GQIStringColumn _stateColumn = new GQIStringColumn("Agent State");
         private static readonly GQIIntColumn _nonSwarmableElementCountColumn = new GQIIntColumn("Non-Swarmable Element Count");
@@ -102,56 +103,19 @@ namespace Element_Count_Per_Agent_1
         {
             _logger.Information("GetNextPage");
 
-            _agentInfos = LoadAgents();
-
-            var elementInfos = LoadElements();
-
-            lock(_elementToHost)
+            lock (_dictLock)
             {
-                _elementToHost = elementInfos.ToDictionary(
-                    elementInfo => elementInfo.ToElementID(),
-                    elementInfo => (elementInfo.HostingAgentID, elementInfo.IsSwarmable));
+                _agentInfoCache = LoadAgents()
+                    .ToDictionary(agentInfo => agentInfo.ID, agentInfo => agentInfo);
+
+                _elementInfoCache = LoadElements()
+                    .ToDictionary(elementInfo => elementInfo.ToElementID(), elementInfo => elementInfo);
+
+                return new GQIPage(_agentInfoCache.Keys.Select(dataMinerId => GetRowForAgent(dataMinerId)).ToArray())
+                {
+                    HasNextPage = false,
+                };
             }
-
-            var agentWithElementsCounts = _agentInfos
-                .GroupJoin
-                    (
-                        elementInfos.GroupBy(elementInfo => elementInfo.HostingAgentID),
-                        agentInfo => agentInfo.ID,
-                        elementInfoGroup => elementInfoGroup.Key,
-                        (agentInfo, elementInfoGroups) =>
-                        {
-                            var nonSwarmableCount = elementInfoGroups.Sum(group => group.Count(elementInfo => !elementInfo.IsSwarmable));
-                            var swarmableCount = elementInfoGroups.Sum(group => group.Count(elementInfo => elementInfo.IsSwarmable));
-                            var totalCount = nonSwarmableCount + swarmableCount;
-                            return (agentInfo, nonSwarmableCount, swarmableCount, totalCount);
-                        }
-                    )
-                .ToArray();
-
-            var rows = new List<GQIRow>(elementInfos.Length);
-            foreach (var entry in agentWithElementsCounts)
-            {
-                var agentInfo = entry.agentInfo;
-
-                rows.Add(new GQIRow(
-                    agentInfo.ID.ToString(),
-                    new[]
-                    {
-                        new GQICell() { Value = agentInfo.ID, DisplayValue = agentInfo.ID.ToString() },
-                        new GQICell() { Value = agentInfo.AgentName, DisplayValue = agentInfo.AgentName },
-                        new GQICell() { Value = agentInfo.ConnectionState.ToString(), DisplayValue = agentInfo.ConnectionState.ToString() },
-                        
-                        new GQICell() { Value = entry.nonSwarmableCount, DisplayValue = entry.nonSwarmableCount.ToString() },
-                        new GQICell() { Value = entry.swarmableCount, DisplayValue = entry.swarmableCount.ToString() },
-                        new GQICell() { Value = entry.totalCount, DisplayValue = entry.totalCount.ToString() },
-                    }));
-            }
-
-            return new GQIPage(rows.ToArray())
-            {
-                HasNextPage = false,
-            };
         }
 
         public void OnStartUpdates(IGQIUpdater updater)
@@ -189,68 +153,6 @@ namespace Element_Count_Per_Agent_1
 
         }
 
-        private void OnElementInfoEventMessage(IGQIUpdater updater, ElementInfoEventMessage elementInfo)
-        {
-            var elementId = elementInfo.ToElementID();
-            var newHost = elementInfo.HostingAgentID;
-
-            _logger.Debug($"Observed ElementInfoEvent for '{elementInfo.Name}' ({elementId}){(elementInfo.IsDeleted ? " [Deleted]" : string.Empty)} with host {newHost}");
-
-            lock (_elementToHost)
-            {
-                int oldHost = -1;
-                if(_elementToHost.TryGetValue(elementId, out var oldHostAndSwarmable))
-                {
-                    oldHost = oldHostAndSwarmable.Item1;
-                }
-
-                if (oldHost == newHost)
-                    newHost = -1; // not really a new host
-
-                if (elementInfo.IsDeleted)
-                {
-                    // deleted element
-                    _logger.Debug($"Removing '{elementInfo.Name}' ({elementId})");
-                    _elementToHost.Remove(elementId);
-                }
-                else if (newHost > 0)
-                {
-                    // new or swarmed element
-                    _logger.Debug($"Updating host '{elementInfo.Name}' ({elementId}) to {newHost}");
-                    _elementToHost[elementId] = (newHost, elementInfo.IsSwarmable);
-
-                    // Recalculate count for new host
-                    UpdateHostCounts(updater, newHost);
-                }
-
-                if (elementInfo.IsDeleted || newHost > 0)
-                {
-                    // Recalculate count for old host
-                    UpdateHostCounts(updater, oldHost);
-                }
-            }
-        }
-
-        private void UpdateHostCounts(IGQIUpdater updater, int hostID)
-        {
-            var totalElements = _elementToHost.Where(element => element.Value.Item1 == hostID).ToArray();
-            var nonSwarmableElementsCount = totalElements.Count(element => !element.Value.Item2);
-            var swarmableElementsCount = totalElements.Length - nonSwarmableElementsCount;
-
-            _logger.Information($"Updating host {hostID} with counts ({nonSwarmableElementsCount}/{swarmableElementsCount}/{totalElements.Length})");
-
-            updater.UpdateCell(hostID.ToString(), _nonSwarmableElementCountColumn, nonSwarmableElementsCount);
-            updater.UpdateCell(hostID.ToString(), _swarmableElementCountColumn, swarmableElementsCount);
-            updater.UpdateCell(hostID.ToString(), _totalElementCountColumn, totalElements.Length);
-        }
-
-        private void OnDataMinerInfoEvent(IGQIUpdater updater, DataMinerInfoEvent dataMinerInfo)
-        {
-            _logger.Information($"Observed DataMinerInfoEvent for '{dataMinerInfo.AgentName}' ({dataMinerInfo.DataMinerID}) with state {dataMinerInfo.Raw.ConnectionState}");
-
-            updater.UpdateCell(dataMinerInfo.DataMinerID.ToString(), _stateColumn, dataMinerInfo.Raw.ConnectionState.ToString());
-        }
-
         public void OnStopUpdates()
         {
             _logger.Information("OnStopUpdates");
@@ -259,6 +161,57 @@ namespace Element_Count_Per_Agent_1
                 _dms.GetConnection().RemoveSubscription(_subscriptionID);
                 _subscriptionID = null;
             }
+        }
+
+        private void OnElementInfoEventMessage(IGQIUpdater updater, ElementInfoEventMessage elementInfo)
+        {
+            var elementId = elementInfo.ToElementID();
+            var newHost = elementInfo.HostingAgentID;
+
+            _logger.Debug($"Observed ElementInfoEvent for '{elementInfo.Name}' ({elementId}){(elementInfo.IsDeleted ? " [Deleted]" : string.Empty)} with host {newHost}");
+
+            lock (_dictLock)
+            {
+                ElementInfoEventMessage oldEntry = null;
+                if (_elementInfoCache.TryGetValue(elementId, out var entry))
+                {
+                    oldEntry = entry;
+                }
+
+                if(elementInfo.IsDeleted)
+                    _elementInfoCache.Remove(elementId);
+                else
+                    _elementInfoCache[elementId] = elementInfo;
+
+                if(oldEntry is null || elementInfo.IsDeleted)
+                {
+                    // update current host
+                    var currentHostRow = GetRowForAgent(elementInfo.HostingAgentID);
+                    updater.UpdateRow(currentHostRow);
+                }
+                else if (oldEntry.HostingAgentID != elementInfo.HostingAgentID)
+                {
+                    // update current host
+                    var currentHostRow = GetRowForAgent(elementInfo.HostingAgentID);
+                    updater.UpdateRow(currentHostRow);
+
+                    // update old host
+                    var oldHostRow = GetRowForAgent(oldEntry.HostingAgentID);
+                    updater.UpdateRow(oldHostRow);
+                }
+            }
+        }
+
+        private void OnDataMinerInfoEvent(IGQIUpdater updater, DataMinerInfoEvent dataMinerInfo)
+        {
+            _logger.Information($"Observed DataMinerInfoEvent for '{dataMinerInfo.AgentName}' ({dataMinerInfo.DataMinerID}) with state {dataMinerInfo.Raw.ConnectionState}");
+
+            lock(_dictLock)
+            {
+                _agentInfoCache[dataMinerInfo.DataMinerID] = dataMinerInfo.Raw;
+            }
+
+            updater.UpdateCell(dataMinerInfo.DataMinerID.ToString(), _stateColumn, dataMinerInfo.Raw.ConnectionState.ToString());
         }
 
         private GetDataMinerInfoResponseMessage[] LoadAgents()
@@ -307,6 +260,46 @@ namespace Element_Count_Per_Agent_1
                 throw new Exception($"Response is null or empty");
 
             return resp.OfType<ElementInfoEventMessage>().ToArray();
+        }
+
+        private GQIRow GetRowForAgent(int dataMinerID)
+        {
+            GetDataMinerInfoResponseMessage agentInfo = null;
+            var swarmableCount = 0;
+            var nonSwarmableCount = 0;
+            lock (_dictLock)
+            {
+                if (!_agentInfoCache.TryGetValue(dataMinerID, out agentInfo) || agentInfo is null)
+                    return null;
+
+                foreach(var elementInfo in _elementInfoCache.Values)
+                {
+                    if(elementInfo.HostingAgentID != dataMinerID)
+                        continue;
+
+                    if(elementInfo.IsSwarmable)
+                        swarmableCount++;
+                    else
+                        nonSwarmableCount++;
+                }
+            }
+
+            var totalCount = swarmableCount + nonSwarmableCount;
+
+            _logger.Information($"Updating host {agentInfo.ID} with counts ({nonSwarmableCount}/{swarmableCount}/{totalCount})");
+
+            return new GQIRow(
+                    dataMinerID.ToString(),
+                    new[]
+                    {
+                        new GQICell() { Value = agentInfo.ID, DisplayValue = agentInfo.ID.ToString() },
+                        new GQICell() { Value = agentInfo.AgentName, DisplayValue = agentInfo.AgentName },
+                        new GQICell() { Value = agentInfo.ConnectionState.ToString(), DisplayValue = agentInfo.ConnectionState.ToString() },
+
+                        new GQICell() { Value = nonSwarmableCount, DisplayValue = nonSwarmableCount.ToString() },
+                        new GQICell() { Value = swarmableCount, DisplayValue = swarmableCount.ToString() },
+                        new GQICell() { Value = totalCount, DisplayValue = totalCount.ToString() },
+                    });
         }
     }
 
