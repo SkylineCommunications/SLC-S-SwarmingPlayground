@@ -256,8 +256,8 @@ namespace Element_Count_Per_Agent_1
                 throw new DataMinerSecurityException($"Issue occurred in {nameof(ElementCountPerAgent)} when sending request {nameof(GetInfoMessage)}.{InfoType.ElementInfo}: {ex}", ex);
             }
 
-            if (resp == null || resp.Length == 0)
-                throw new Exception($"Response is null or empty");
+            if (resp == null)
+                throw new Exception($"Response is null");
 
             return resp.OfType<ElementInfoEventMessage>().ToArray();
         }
