@@ -124,11 +124,10 @@ namespace LoadBalanceTests
 
         private static int _nextElementId = 5;
         internal static ElementInfoEventMessage ElementOn(int hostingAgentId)
-            => new ElementInfoEventMessage() { DataMinerID = 12345679, ElementID = _nextElementId++, HostingAgentID = hostingAgentId };
+            => new ElementInfoEventMessage() { DataMinerID = 12345679, ElementID = _nextElementId++, HostingAgentID = hostingAgentId, IsSwarmable = true };
 
         internal static ElementInfoEventMessage NonSwarmableElementOn(int hostingAgentId)
-            /* TODO cannot set IsSwarmable in this slnettypes version, set is spectrum instead for now */
-            => new ElementInfoEventMessage() { DataMinerID = 12345679, ElementID = _nextElementId++, HostingAgentID = hostingAgentId, IsSpectrumElement = true };
+            => new ElementInfoEventMessage() { DataMinerID = 12345679, ElementID = _nextElementId++, HostingAgentID = hostingAgentId, IsSwarmable = false };
     }
 
     internal static class Extensions
