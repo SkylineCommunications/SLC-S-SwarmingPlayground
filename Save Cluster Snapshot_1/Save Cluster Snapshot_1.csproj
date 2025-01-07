@@ -18,8 +18,8 @@
     <AssemblyVersion>2024.1104.1004.20398</AssemblyVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.1.13" />
-    <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.4.11" />
+    <PackageReference Include="Skyline.DataMiner.Core.DataMinerSystem.Automation" Version="1.1.2.2" />
+    <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.5.1" />
   </ItemGroup>
   <ProjectExtensions>
     <VisualStudio>
