@@ -108,10 +108,14 @@ namespace Swarm_Elements_1
 		{
 			var agents = engine.GetAgents();
 
-			Check.IfSwarmingIsEnabled(agents);
+            if (!Check.IfSwarmingIsEnabled(agents))
+                engine.ExitFail("Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
             var elementKeys = GetElementIDs(engine);
             int targetAgentId = GetTargetAgentId(engine);
+
+            if (!agents.Any(agentInfo => agentInfo.ID == targetAgentId))
+                throw new ArgumentException($"Target agent '{targetAgentId}' is not part of the cluster");
 
             if (!elementKeys.Any())
                 return; // nothing to do here

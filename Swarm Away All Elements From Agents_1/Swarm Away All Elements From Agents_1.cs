@@ -105,7 +105,8 @@ namespace Swarm_Away_All_Elements_From_Agents_1
         {
             var agentInfos = engine.GetAgents();
 
-            Check.IfSwarmingIsEnabled(agentInfos);
+            if (!Check.IfSwarmingIsEnabled(agentInfos))
+                engine.ExitFail("Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
             var elementInfos = engine.GetElements();
 

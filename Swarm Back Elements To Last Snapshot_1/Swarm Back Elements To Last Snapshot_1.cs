@@ -106,7 +106,8 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
 		{
             var agentInfos = engine.GetAgents();
 
-            Check.IfSwarmingIsEnabled(agentInfos);
+            if (!Check.IfSwarmingIsEnabled(agentInfos))
+                engine.ExitFail("Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
             var targetAgentIds = engine.GetScriptParamInts(PARAM_TARGET_AGENT_IDS);
 

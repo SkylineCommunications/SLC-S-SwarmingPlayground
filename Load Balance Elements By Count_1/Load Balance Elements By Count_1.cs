@@ -1,8 +1,8 @@
 namespace LoadBalanceElementsByCount_1
 {
     using System;
-	using Swarming_Playground;
     using Skyline.DataMiner.Automation;
+    using Swarming_Playground;
 
     /// <summary>
     /// Represents a DataMiner Automation script.
@@ -50,7 +50,8 @@ namespace LoadBalanceElementsByCount_1
 		{
             var agentInfos = engine.GetAgents();
 
-            Check.IfSwarmingIsEnabled(agentInfos);
+            if (!Check.IfSwarmingIsEnabled(agentInfos))
+                engine.ExitFail("Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
             var elementInfos = engine.GetElements();
 

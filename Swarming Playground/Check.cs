@@ -13,10 +13,9 @@ namespace Swarming_Playground
         /// </summary>
         /// <param name="agentInfos"></param>
         /// <exception cref="NotSupportedException"></exception>
-        public static void IfSwarmingIsEnabled(GetDataMinerInfoResponseMessage[] agentInfos)
+        public static bool IfSwarmingIsEnabled(GetDataMinerInfoResponseMessage[] agentInfos)
         {
-            if (!agentInfos.All(agentInfo => agentInfo.IsSwarmingEnabled))
-                throw new NotSupportedException("Swarming is not supported in this DMS!");
+            return agentInfos.All(agentInfo => agentInfo.IsSwarmingEnabled);
         }
     }
 }
