@@ -82,6 +82,8 @@ namespace Swarming_Prerequisites_1
             new GQIBooleanColumn("No Incompatible Scripts"),
             new GQIBooleanColumn("No Incompatible QActions"),
 
+            new GQIBooleanColumn("Finished Successfully"),
+
             new GQIStringColumn("Summary"),
         };
 
@@ -120,54 +122,36 @@ namespace Swarming_Prerequisites_1
             if (localInfo == null)
                 throw new DataMinerException("Failed to gather local dataminer info");
 
-            var prereqResp = CheckPrerequisites(localInfo.ID);
-
-
-            return new GQIPage(new[] { new GQIRow(
-                new[]
+            try
+            {
+                var prereqResp = CheckPrerequisites(localInfo.ID);
+                return PrerequisiteResponseToGQIPage(localInfo.IsSwarmingEnabled, true, prereqResp);
+            }
+            catch (Exception ex)
+            {
+                var resp = new SwarmingPrerequisitesCheckResponse
                 {
-                    new GQICell() { Value = localInfo.IsSwarmingEnabled, DisplayValue = localInfo.IsSwarmingEnabled.ToString() },
-
-                    new GQICell() { Value = prereqResp.SupportedDatabase, DisplayValue = prereqResp.SupportedDatabase.ToString() },
-                    new GQICell() { Value = prereqResp.SupportedDMS, DisplayValue = prereqResp.SupportedDMS.ToString() },
-                    new GQICell() { Value = prereqResp.CentralDatabaseNotConfigured, DisplayValue = prereqResp.CentralDatabaseNotConfigured.ToString() },
-                    new GQICell() { Value = prereqResp.LegacyReportsAndDashboardsDisabled, DisplayValue = prereqResp.LegacyReportsAndDashboardsDisabled.ToString() },
-                    new GQICell() { Value = prereqResp.NoIncompatibleEnhancedServicesOnDMS, DisplayValue = prereqResp.NoIncompatibleEnhancedServicesOnDMS.ToString() },
-
-                    new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInScripts, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInScripts.ToString() },
-                    new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions.ToString() },
-                        
-                    new GQICell() { Value = prereqResp.Summary, DisplayValue = prereqResp.Summary },
-                })})
-                {
-                    HasNextPage = false,
+                    // all flags default false
+                    Summary = ex.Message
                 };
+                return PrerequisiteResponseToGQIPage(localInfo.IsSwarmingEnabled, false, resp);
+            }
         }
-
-
 
         private SwarmingPrerequisitesCheckResponse CheckPrerequisites(int localDataMinerID)
         {
             if (_dms == null)
                 throw new ArgumentNullException($"{nameof(GQIDMS)} is null.");
 
-            DMSMessage[] resp = null;
-            try
+            var req = new SwarmingPrerequisitesCheckRequest()
             {
-                var req = new SwarmingPrerequisitesCheckRequest()
-                {
-                    AnalyzeAlarmIDUsage = _analyzeAlarmIDs,
-                };
+                AnalyzeAlarmIDUsage = _analyzeAlarmIDs,
+            };
 
-                if (_onlyCheckLocalDMA)
-                    req.DataMinerID = localDataMinerID;
+            if (_onlyCheckLocalDMA)
+                req.DataMinerID = localDataMinerID;
 
-                resp = _dms.SendMessages(req);
-            }
-            catch (Exception ex)
-            {
-                throw new DataMinerSecurityException($"Issue occurred in {nameof(SwarmingPrerequisites)} when sending request {nameof(SwarmingPrerequisitesCheckRequest)}: {ex}", ex);
-            }
+            var resp = _dms.SendMessages(req);
 
             if (resp == null || resp.Length == 0)
                 throw new Exception($"Response is null or empty");
@@ -177,6 +161,31 @@ namespace Swarming_Prerequisites_1
                 throw new Exception($"{nameof(dmaResponses)} does not contain exactly 1 response");
 
             return dmaResponses.First();
+        }
+
+        private GQIPage PrerequisiteResponseToGQIPage(bool isSwarmingEnabled, bool success, SwarmingPrerequisitesCheckResponse resp)
+        {
+            return new GQIPage(new[] { new GQIRow(
+                new[]
+                {
+                    new GQICell() { Value = isSwarmingEnabled, DisplayValue = isSwarmingEnabled.ToString() },
+
+                    new GQICell() { Value = resp.SupportedDatabase, DisplayValue = resp.SupportedDatabase.ToString() },
+                    new GQICell() { Value = resp.SupportedDMS, DisplayValue = resp.SupportedDMS.ToString() },
+                    new GQICell() { Value = resp.CentralDatabaseNotConfigured, DisplayValue = resp.CentralDatabaseNotConfigured.ToString() },
+                    new GQICell() { Value = resp.LegacyReportsAndDashboardsDisabled, DisplayValue = resp.LegacyReportsAndDashboardsDisabled.ToString() },
+                    new GQICell() { Value = resp.NoIncompatibleEnhancedServicesOnDMS, DisplayValue = resp.NoIncompatibleEnhancedServicesOnDMS.ToString() },
+
+                    new GQICell() { Value = resp.NoObsoleteAlarmIdUsageInScripts, DisplayValue = resp.NoObsoleteAlarmIdUsageInScripts.ToString() },
+                    new GQICell() { Value = resp.NoObsoleteAlarmIdUsageInProtocolQActions, DisplayValue = resp.NoObsoleteAlarmIdUsageInProtocolQActions.ToString() },
+                    
+                    new GQICell() { Value = success, DisplayValue = success.ToString() },
+
+                    new GQICell() { Value = resp.Summary, DisplayValue = resp.Summary },
+                })})
+            {
+                HasNextPage = false,
+            };
         }
     }
 }
