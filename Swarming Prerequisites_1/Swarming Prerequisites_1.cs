@@ -64,8 +64,10 @@ namespace Swarming_Prerequisites_1
         private GQIDMS _dms;
         private IGQILogger _logger;
         private bool _analyzeAlarmIDs = false;
+        private bool _onlyCheckLocalDMA = false;
 
         private static readonly GQIBooleanArgument _analyzeAlarmIDsArgument = new GQIBooleanArgument("Analyze AlarmIDs");
+        private static readonly GQIBooleanArgument _onlyCheckLocalDMAArgument = new GQIBooleanArgument("Only check local DMA");
 
         private readonly GQIColumn[] _columns = new GQIColumn[]
         {
@@ -76,10 +78,9 @@ namespace Swarming_Prerequisites_1
             new GQIBooleanColumn("No Central Database"),
             new GQIBooleanColumn("No Legacy Dashboards And Reports"),
             new GQIBooleanColumn("No Incompatible Enhanced Services"),
-            new GQIBooleanColumn("No Incompatible SLAs"),
 
             new GQIBooleanColumn("No Incompatible Scripts"),
-            //new GQIBooleanColumn("No Incompatible QActions"),
+            new GQIBooleanColumn("No Incompatible QActions"),
 
             new GQIStringColumn("Summary"),
         };
@@ -97,37 +98,44 @@ namespace Swarming_Prerequisites_1
             return default;
         }
 
-        public GQIArgument[] GetInputArguments() => new[] { _analyzeAlarmIDsArgument };
+        public GQIArgument[] GetInputArguments() => new[] { _analyzeAlarmIDsArgument, _onlyCheckLocalDMAArgument };
 
         public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
         {
             if (args.TryGetArgumentValue(_analyzeAlarmIDsArgument, out var shoudAnalyzeAlarmIDs))
                 _analyzeAlarmIDs = shoudAnalyzeAlarmIDs;
 
+            if (args.TryGetArgumentValue(_onlyCheckLocalDMAArgument, out var onlyCheckLocalDMA))
+                _onlyCheckLocalDMA = onlyCheckLocalDMA;
+
             return default;
         }
 
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
-            var prereqResp = CheckPrerequisites();
-            var isSwarmingEnabled = _dms.SendMessages(new GetInfoMessage(InfoType.LocalDataMinerInfo))
+            var localInfo = _dms.SendMessages(new GetInfoMessage(InfoType.LocalDataMinerInfo))
                 .OfType<GetDataMinerInfoResponseMessage>()
-                .FirstOrDefault()?.IsSwarmingEnabled ?? false;
+                .FirstOrDefault();
+
+            if (localInfo == null)
+                throw new DataMinerException("Failed to gather local dataminer info");
+
+            var prereqResp = CheckPrerequisites(localInfo.ID);
+
 
             return new GQIPage(new[] { new GQIRow(
                 new[]
                 {
-                    new GQICell() { Value = isSwarmingEnabled, DisplayValue = isSwarmingEnabled.ToString() },
+                    new GQICell() { Value = localInfo.IsSwarmingEnabled, DisplayValue = localInfo.IsSwarmingEnabled.ToString() },
 
                     new GQICell() { Value = prereqResp.SupportedDatabase, DisplayValue = prereqResp.SupportedDatabase.ToString() },
                     new GQICell() { Value = prereqResp.SupportedDMS, DisplayValue = prereqResp.SupportedDMS.ToString() },
                     new GQICell() { Value = prereqResp.CentralDatabaseNotConfigured, DisplayValue = prereqResp.CentralDatabaseNotConfigured.ToString() },
                     new GQICell() { Value = prereqResp.LegacyReportsAndDashboardsDisabled, DisplayValue = prereqResp.LegacyReportsAndDashboardsDisabled.ToString() },
                     new GQICell() { Value = prereqResp.NoIncompatibleEnhancedServicesOnDMS, DisplayValue = prereqResp.NoIncompatibleEnhancedServicesOnDMS.ToString() },
-                    new GQICell() { Value = prereqResp.NoIncompatibleSLAsOnDMS, DisplayValue = prereqResp.NoIncompatibleSLAsOnDMS.ToString() },
 
                     new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInScripts, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInScripts.ToString() },
-                    //new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions.ToString() },
+                    new GQICell() { Value = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions, DisplayValue = prereqResp.NoObsoleteAlarmIdUsageInProtocolQActions.ToString() },
                         
                     new GQICell() { Value = prereqResp.Summary, DisplayValue = prereqResp.Summary },
                 })})
@@ -138,7 +146,7 @@ namespace Swarming_Prerequisites_1
 
 
 
-        private SwarmingPrerequisitesCheckResponse CheckPrerequisites()
+        private SwarmingPrerequisitesCheckResponse CheckPrerequisites(int localDataMinerID)
         {
             if (_dms == null)
                 throw new ArgumentNullException($"{nameof(GQIDMS)} is null.");
@@ -150,6 +158,10 @@ namespace Swarming_Prerequisites_1
                 {
                     AnalyzeAlarmIDUsage = _analyzeAlarmIDs,
                 };
+
+                if (_onlyCheckLocalDMA)
+                    req.DataMinerID = localDataMinerID;
+
                 resp = _dms.SendMessages(req);
             }
             catch (Exception ex)
