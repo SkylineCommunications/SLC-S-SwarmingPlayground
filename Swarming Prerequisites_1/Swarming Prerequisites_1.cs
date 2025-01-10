@@ -104,8 +104,8 @@ namespace Swarming_Prerequisites_1
 
         public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
         {
-            if (args.TryGetArgumentValue(_analyzeAlarmIDsArgument, out var shoudAnalyzeAlarmIDs))
-                _analyzeAlarmIDs = shoudAnalyzeAlarmIDs;
+            if (args.TryGetArgumentValue(_analyzeAlarmIDsArgument, out var shouldAnalyzeAlarmIDs))
+                _analyzeAlarmIDs = shouldAnalyzeAlarmIDs;
 
             if (args.TryGetArgumentValue(_onlyCheckLocalDMAArgument, out var onlyCheckLocalDMA))
                 _onlyCheckLocalDMA = onlyCheckLocalDMA;
