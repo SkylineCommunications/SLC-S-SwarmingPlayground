@@ -117,7 +117,7 @@ namespace Swarmable_Elements_1
 
         public void OnStartUpdates(IGQIUpdater updater)
         {
-            _logger.Information("OnStartUpdates");
+            _logger.Debug("OnStartUpdates");
 
             _subscriptionID = "DS-Swarmable-Elements-" + Guid.NewGuid();
             var connection = _dms.GetConnection();

@@ -1,9 +1,8 @@
 ﻿
 namespace Swarming_Playground
 {
-    using System;
-    using Skyline.DataMiner.Net.Messages;
     using System.Linq;
+    using Skyline.DataMiner.Net.Messages;
 
     public static class Check
     {

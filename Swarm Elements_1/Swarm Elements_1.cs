@@ -62,7 +62,7 @@ namespace Swarm_Elements_1
     /// <summary>
     /// Represents a DataMiner Automation script.
     /// </summary>
-	public class Script
+    public class Script
 	{
         private const string PARAM_ELEMENT_KEYS = "Element Keys";
         private const string PARAM_TARGET_AGENT_ID = "Target Agent ID";
@@ -104,27 +104,27 @@ namespace Swarm_Elements_1
 			}
 		}
 
-		private void RunSafe(IEngine engine)
+        private void RunSafe(IEngine engine)
 		{
 			var agents = engine.GetAgents();
 
-            if (!Check.IfSwarmingIsEnabled(agents))
+			if (!Check.IfSwarmingIsEnabled(agents))
                 engine.ExitFail("Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
-            var elementKeys = GetElementIDs(engine);
-            int targetAgentId = GetTargetAgentId(engine);
+			var elementKeys = GetElementIDs(engine);
+			int targetAgentId = GetTargetAgentId(engine);
 
-            if (!agents.Any(agentInfo => agentInfo.ID == targetAgentId))
+			if (!agents.Any(agentInfo => agentInfo.ID == targetAgentId))
                 throw new ArgumentException($"Target agent '{targetAgentId}' is not part of the cluster");
 
-            if (!elementKeys.Any())
+			if (!elementKeys.Any())
                 return; // nothing to do here
 
-            var swarmingResults = SwarmingHelper.Create(Engine.SLNetRaw)
+			var swarmingResults = SwarmingHelper.Create(Engine.SLNetRaw)
                 .SwarmElements(elementKeys)
                 .ToAgent(targetAgentId);
 
-            if (swarmingResults.Any(result => !result.Success))
+			if (swarmingResults.Any(result => !result.Success))
             {
                 var failureMessages = swarmingResults
                     .Where(result => !result.Success)
@@ -134,6 +134,7 @@ namespace Swarm_Elements_1
                 engine.ExitFail(string.Join(", ", failureMessages));
             }
         }
+
         private ElementID[] GetElementIDs(IEngine engine)
         {
             var elementKeysRaw = engine.GetScriptParam(PARAM_ELEMENT_KEYS)?.Value;

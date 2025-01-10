@@ -1,9 +1,9 @@
 ﻿namespace Swarming_Playground
 {
+    using System;
+    using System.Linq;
     using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;
-    using System.Linq;
-    using System;
 
 
     public static class Input

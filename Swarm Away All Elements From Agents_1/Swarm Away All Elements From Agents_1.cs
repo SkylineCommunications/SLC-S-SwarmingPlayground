@@ -53,9 +53,9 @@ namespace Swarm_Away_All_Elements_From_Agents_1
 {
     using System;
     using System.Linq;
-    using Swarming_Playground;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net.Messages;
+    using Swarming_Playground;
 
     /// <summary>
     /// Represents a DataMiner Automation script.

@@ -52,11 +52,18 @@ dd/mm/2024	1.0.0.1		XXX, Skyline	Initial version
 namespace Swarm_Back_Elements_To_Last_Snapshot_1
 {
     using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Linq;
-    using Swarming_Playground;
+    using System.Text;
+    using System.Threading.Tasks;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net;
+    using Skyline.DataMiner.Net.Messages;
+    using Skyline.DataMiner.Net.PerformanceIndication;
+    using Skyline.DataMiner.Net.Swarming;
     using Skyline.DataMiner.Net.Swarming.Helper;
+    using Swarming_Playground;
 
     /// <summary>
     /// Represents a DataMiner Automation script.
@@ -102,7 +109,7 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
 			}
 		}
 
-		private void RunSafe(IEngine engine)
+        private void RunSafe(IEngine engine)
 		{
             var agentInfos = engine.GetAgents();
 
@@ -117,10 +124,9 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
                     throw new ArgumentException($"Target agent '{targetAgentId}' is not part of the cluster");
             }
 
-            var swarmingHelper = SwarmingHelper.Create(engine.SendSLNetMessage);
-
-			var elementInfos = engine.GetElements();
-			foreach(var elementInfo in elementInfos)
+            var elementsToSwarm = new Dictionary<int, List<ElementInfoEventMessage>>();
+            var elementInfos = engine.GetElements();
+            foreach (var elementInfo in elementInfos)
 			{
 				if (!elementInfo.IsSwarmable)
 					continue;
@@ -135,12 +141,39 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
 				if (!targetAgentIds.Contains(targetAgentId))
 					continue;
 
-				engine.Log($"Swarming element {elementInfo.Name} to agent {targetAgentId}");
+				if(!elementsToSwarm.TryGetValue(targetAgentId, out var list))
+				{
+					list = new List<ElementInfoEventMessage>();
+					elementsToSwarm[targetAgentId] = list;
+				}
 
-				swarmingHelper
-					.SwarmElement(new ElementID(elementInfo.DataMinerID, elementInfo.ElementID))
-					.ToAgent(targetAgentId);
-			}
+				list.Add(elementInfo);
+            }
+
+            var failures = new ConcurrentBag<SwarmingResult>();
+            Parallel.ForEach(elementsToSwarm, kvp =>
+            {
+                var targetAgentId = kvp.Key;
+                var elements = kvp.Value;
+
+                engine.Log($"Swarming elements to agent {targetAgentId}: " + string.Join(", ", elements.Select(info => info.Name)));
+
+                var responses = SwarmingHelper.Create(engine.SendSLNetMessage)
+                    .SwarmElements(elements.Select(info => new ElementID(info.DataMinerID, info.ElementID)).ToArray())
+                    .ToAgent(targetAgentId);
+
+                foreach (var failure in responses.Where(resp => !resp.Success))
+                    failures.Add(failure);
+            });
+
+            if (failures.Any())
+            {
+                var summary = new StringBuilder();
+                summary.AppendLine($"Swarming failed for {failures.Count} element(s):");
+                foreach (var failure in failures)
+                    summary.AppendLine($"\t- {failure.DmaObjectRef}: {failure.Message}");
+                engine.ExitFail(summary.ToString());
+            }
         }
     }
 }

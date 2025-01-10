@@ -139,12 +139,12 @@
                 // Choose an item to pick, prefer the one already in the correct bucket from before (one less swarm in the end)
                 // otherwise pick one from the projected largest bucket (already sorted + to sort if not moved)
                 var leftoverBucketToRemoveFrom = leftoverBuckets.ContainsKey(smallestBucketToUse.Key)
-                    ? leftoverBuckets.Single(bucket => bucket.Key == smallestBucketToUse.Key)
+                    ? leftoverBuckets.Single(bucket => bucket.Key.ID == smallestBucketToUse.Key.ID)
                     : leftoverBuckets
                         .OrderByDescending(bucket => bucket.Value.Count + currentBuckets[bucket.Key].Count)
                         .First();
 
-                var itemToMove = leftoverBucketToRemoveFrom.Value.Take(1).First();
+                var itemToMove = leftoverBucketToRemoveFrom.Value.First();
                 smallestBucketToUse.Value.Add(itemToMove);
                 leftoverBucketToRemoveFrom.Value.Remove(itemToMove);
 

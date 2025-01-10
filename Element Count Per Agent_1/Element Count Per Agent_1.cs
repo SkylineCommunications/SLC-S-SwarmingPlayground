@@ -62,29 +62,25 @@ namespace Element_Count_Per_Agent_1
     [GQIMetaData(Name = "Element Count Per Agent")]
     public class ElementCountPerAgent : IGQIDataSource, IGQIOnInit, IGQIUpdateable
     {
-        private GQIDMS _dms;
-        private IGQILogger _logger;
-        private string _subscriptionID;
-
-        private object _dictLock = new object();
-        private Dictionary<int, GetDataMinerInfoResponseMessage> _agentInfoCache = new Dictionary<int, GetDataMinerInfoResponseMessage>();
-        private Dictionary<ElementID, ElementInfoEventMessage> _elementInfoCache = new Dictionary<ElementID, ElementInfoEventMessage>();
-
         private static readonly GQIStringColumn _stateColumn = new GQIStringColumn("Agent State");
-        private static readonly GQIIntColumn _nonSwarmableElementCountColumn = new GQIIntColumn("Non-Swarmable Element Count");
-        private static readonly GQIIntColumn _swarmableElementCountColumn = new GQIIntColumn("Swarmable Element Count");
-        private static readonly GQIIntColumn _totalElementCountColumn = new GQIIntColumn("Total Element Count");
 
         private readonly GQIColumn[] _columns = new GQIColumn[]
         {
             new GQIIntColumn("Agent ID"),
             new GQIStringColumn("Agent Name"),
             _stateColumn,
-
-            _nonSwarmableElementCountColumn,
-            _swarmableElementCountColumn,
-            _totalElementCountColumn,
+            new GQIIntColumn("Non-Swarmable Element Count"),
+            new GQIIntColumn("Swarmable Element Count"),
+            new GQIIntColumn("Total Element Count"),
         };
+
+        private readonly object _dictLock = new object();
+        private Dictionary<int, GetDataMinerInfoResponseMessage> _agentInfoCache = new Dictionary<int, GetDataMinerInfoResponseMessage>();
+        private Dictionary<ElementID, ElementInfoEventMessage> _elementInfoCache = new Dictionary<ElementID, ElementInfoEventMessage>();
+
+        private GQIDMS _dms;
+        private IGQILogger _logger;
+        private string _subscriptionID;
 
         public GQIColumn[] GetColumns() => _columns;
 
@@ -101,7 +97,7 @@ namespace Element_Count_Per_Agent_1
 
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
-            _logger.Information("GetNextPage");
+            _logger.Debug("GetNextPage");
 
             lock (_dictLock)
             {
@@ -120,7 +116,7 @@ namespace Element_Count_Per_Agent_1
 
         public void OnStartUpdates(IGQIUpdater updater)
         {
-            _logger.Information("OnStartUpdates");
+            _logger.Debug("OnStartUpdates");
 
             _subscriptionID = "DS-Element-Count-Per-Agent-" + Guid.NewGuid();
             var connection = _dms.GetConnection();
@@ -155,7 +151,8 @@ namespace Element_Count_Per_Agent_1
 
         public void OnStopUpdates()
         {
-            _logger.Information("OnStopUpdates");
+            _logger.Debug("OnStopUpdates");
+
             if (_subscriptionID != null)
             {
                 _dms.GetConnection().RemoveSubscription(_subscriptionID);

@@ -51,19 +51,13 @@ dd/mm/2024	1.0.0.1		XXX, Skyline	Initial version
 
 namespace Save_Cluster_Snapshot_1
 {
-	using System;
-	using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
+    using System;
     using System.Linq;
-    using System.Text;
-    using Swarming_Playground;
+    using System.Threading.Tasks;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Automation;
     using Skyline.DataMiner.Core.DataMinerSystem.Common;
-    using Skyline.DataMiner.Core.DataMinerSystem.Common.Properties;
-    using Skyline.DataMiner.Net.PerformanceIndication;
-    using System.Threading.Tasks;
+    using Swarming_Playground;
 
     /// <summary>
     /// Represents a DataMiner Automation script.
