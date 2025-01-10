@@ -1,6 +1,6 @@
 # Swarming Playground
 
-Demo solution to play around with [Swarming](https://docs.dataminer.services/user-guide/Advanced_Functionality/Swarming/Swarming.html?q=swarming).
+Demo solution to play around with [Swarming](https://aka.dataminer.services/swarming).
 
 Requires a 10.5.1+ DMS with Swarming enabled.
 
