@@ -32,11 +32,11 @@
                 .GroupJoin
                     (
                         elementInfos.GroupBy(elementInfo => elementInfo.HostingAgentID),
-						agentInfo => agentInfo.ID,
-						elementInfoGroup => elementInfoGroup.Key,
-						(agentInfo, elementInfoGroups) => (agentInfo, elementInfoGroups.SelectMany(x => x).ToList())
-					)
-				.ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
+                        agentInfo => agentInfo.ID,
+                        elementInfoGroup => elementInfoGroup.Key,
+                        (agentInfo, elementInfoGroups) => (agentInfo, elementInfoGroups.SelectMany(x => x).ToList())
+                    )
+                .ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
         }
 
         public void SwarmElements()
