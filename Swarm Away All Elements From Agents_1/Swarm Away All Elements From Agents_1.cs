@@ -113,18 +113,18 @@ namespace Swarm_Away_All_Elements_From_Agents_1
             var sourceAgentIds = engine.GetScriptParamInts(PARAM_SOURCE_AGENT_IDS);
 
             if (!sourceAgentIds.Any())
-                throw new ArgumentException("Must at least provide one agent");
+                engine.ExitFail("Must at least provide one element!");
 
             if (!agentInfos.Select(agentinfo => agentinfo.ID).Except(sourceAgentIds).Any())
-                throw new ArgumentException("Cannot swarm away all elements from all agents");
+                engine.ExitFail("Cannot swarm away all elements from all agents");
 
             if (!agentInfos.Where(agentInfo => agentInfo.ConnectionState == DataMinerAgentConnectionState.Normal).Select(agentinfo => agentinfo.ID).Except(sourceAgentIds).Any())
-                throw new ArgumentException("Cannot swarm away all elements because there are no healthy agents available");
+                engine.ExitFail("Must at least provide one element!");
 
             foreach (var sourceAgentId in sourceAgentIds)
             {
                 if (!agentInfos.Any(agentInfo => agentInfo.ID == sourceAgentId))
-                    throw new ArgumentException($"Source agent '{sourceAgentId}' is not part of the cluster");
+                    engine.ExitFail($"Source agent '{sourceAgentId}' is not part of the cluster");
             }
 
             var clusterConfig = new ClusterConfig(engine, agentInfos, elementInfos);

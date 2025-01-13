@@ -121,7 +121,7 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
             foreach (var targetAgentId in targetAgentIds)
             {
                 if (!agentInfos.Any(agentInfo => agentInfo.ID == targetAgentId))
-                    throw new ArgumentException($"Target agent '{targetAgentId}' is not part of the cluster");
+                    engine.ExitFail($"Target agent '{targetAgentId}' is not part of the cluster");
             }
 
             var elementsToSwarm = new Dictionary<int, List<ElementInfoEventMessage>>();

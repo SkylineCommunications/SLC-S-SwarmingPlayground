@@ -115,9 +115,9 @@ namespace Swarm_Elements_1
 			int targetAgentId = GetTargetAgentId(engine);
 
 			if (!agents.Any(agentInfo => agentInfo.ID == targetAgentId))
-                throw new ArgumentException($"Target agent '{targetAgentId}' is not part of the cluster");
+                engine.ExitFail($"Target agent '{targetAgentId}' is not part of the cluster");
 
-			if (!elementKeys.Any())
+            if (!elementKeys.Any())
                 return; // nothing to do here
 
 			var swarmingResults = SwarmingHelper.Create(Engine.SLNetRaw)
@@ -139,7 +139,7 @@ namespace Swarm_Elements_1
         {
             var elementKeysRaw = engine.GetScriptParam(PARAM_ELEMENT_KEYS)?.Value;
             if (string.IsNullOrWhiteSpace(elementKeysRaw))
-                throw new ArgumentNullException(PARAM_ELEMENT_KEYS);
+                engine.ExitFail("Must at least provide one element!");
 
             try
             {
@@ -151,7 +151,7 @@ namespace Swarm_Elements_1
                     .ToArray();
 
                 if (ids.Length <= 0)
-                    throw new ArgumentException("Must at least provide one element!");
+                    engine.ExitFail("Must at least provide one element!");
 
                 return ids;
             }
@@ -166,13 +166,9 @@ namespace Swarm_Elements_1
                     .ToArray();
 
                 if (ids.Length <= 0)
-                    throw new ArgumentException("Must at least provide one element!");
+                    engine.ExitFail("Must at least provide one element!");
 
                 return ids;
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException("Failed to parse the Element Id(s): " + ex.Message);
             }
         }
 
@@ -180,7 +176,7 @@ namespace Swarm_Elements_1
         {
             var targetAgentIdRaw = engine.GetScriptParam(PARAM_TARGET_AGENT_ID)?.Value;
             if (string.IsNullOrWhiteSpace(targetAgentIdRaw))
-                throw new ArgumentNullException(PARAM_TARGET_AGENT_ID);
+                engine.ExitFail("Must provide exactly 1 Target Agent ID!");
 
             try
             {
@@ -190,7 +186,7 @@ namespace Swarm_Elements_1
                     .DeserializeObject<string[]>(targetAgentIdRaw);
 
                 if (dmaIds.Length != 1)
-                    throw new ArgumentException("Must provide exactly 1 Target Agent ID!");
+                    engine.ExitFail("Must provide exactly 1 Target Agent ID!");
 
                 return int.Parse(dmaIds.First());
             }
@@ -199,10 +195,6 @@ namespace Swarm_Elements_1
                 // not valid json, try parse as normal input parameters
                 // eg "789"
                 return int.Parse(targetAgentIdRaw);
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException("Failed to parse the Target Agent ID: " + ex.Message);
             }
         }
     }
