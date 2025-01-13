@@ -230,15 +230,15 @@ namespace Swarmable_Elements_1
             var elementId = new ElementID(elementInfo.DataMinerID, elementInfo.ElementID);
             var hostingAgent = ToName(elementInfo.HostingAgentID);
             return new GQIRow(
-                    elementId.ToString(),
+                elementId.ToString(),
                 new[]
                 {
-                new GQICell() { Value = elementId.ToString(), DisplayValue = elementId.ToString() },
-                        new GQICell() { Value = elementInfo.Name, DisplayValue = elementInfo.Name },
-                        new GQICell() { Value = elementInfo.State.ToString(), DisplayValue = elementInfo.State.ToString() },
-                        new GQICell() { Value = hostingAgent, DisplayValue = hostingAgent },
-                        new GQICell() { Value = elementInfo.IsSwarmable, DisplayValue = elementInfo.IsSwarmable.ToString() },
-                    });
+                    new GQICell() { Value = elementId.ToString(), DisplayValue = elementId.ToString() },
+                    new GQICell() { Value = elementInfo.Name, DisplayValue = elementInfo.Name },
+                    new GQICell() { Value = elementInfo.State.ToString(), DisplayValue = elementInfo.State.ToString() },
+                    new GQICell() { Value = hostingAgent, DisplayValue = hostingAgent },
+                    new GQICell() { Value = elementInfo.IsSwarmable, DisplayValue = elementInfo.IsSwarmable.ToString() },
+                });
         }
 
         private string ToName(int hostingAgentID)

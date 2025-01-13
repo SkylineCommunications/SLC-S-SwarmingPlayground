@@ -2,11 +2,11 @@ namespace LoadBalanceTests
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Swarming_Playground;
     using Moq;
     using NUnit.Framework;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net.Messages;
+    using Swarming_Playground;
 
     public class LoadBalanceByCountTests
     {
@@ -63,7 +63,7 @@ namespace LoadBalanceTests
             new object[]
             {
                 Agents(1, 2, 3),
-                new[] { NonSwarmableElementOn(1).Times(20), NonSwarmableElementOn(2).Times(10), }.Flatten(),
+				new[] { NonSwarmableElementOn(1).Times(20), NonSwarmableElementOn(2).Times(10), }.Flatten(),
                 new[] { 20, 10, 0 },
                 0,
             },

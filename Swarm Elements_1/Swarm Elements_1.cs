@@ -172,7 +172,7 @@ namespace Swarm_Elements_1
             }
             catch (Exception ex)
             {
-                throw new Exception("Failed to parse the Element Id(s): " + ex.Message);
+                throw new ArgumentException("Failed to parse the Element Id(s): " + ex.Message);
             }
         }
 
@@ -190,7 +190,7 @@ namespace Swarm_Elements_1
                     .DeserializeObject<string[]>(targetAgentIdRaw);
 
                 if (dmaIds.Length != 1)
-                    new ArgumentException("Must provide exactly 1 Target Agent ID!");
+                    throw new ArgumentException("Must provide exactly 1 Target Agent ID!");
 
                 return int.Parse(dmaIds.First());
             }
@@ -202,7 +202,7 @@ namespace Swarm_Elements_1
             }
             catch (Exception ex)
             {
-                throw new Exception("Failed to parse the Target Agent ID: " + ex.Message);
+                throw new ArgumentException("Failed to parse the Target Agent ID: " + ex.Message);
             }
         }
     }
