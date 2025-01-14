@@ -60,7 +60,6 @@ namespace Swarm_Back_Elements_To_Last_Snapshot_1
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net;
     using Skyline.DataMiner.Net.Messages;
-    using Skyline.DataMiner.Net.PerformanceIndication;
     using Skyline.DataMiner.Net.Swarming;
     using Skyline.DataMiner.Net.Swarming.Helper;
     using Swarming_Playground;
