@@ -1,9 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +13,8 @@
     <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.5.1" />
   </ItemGroup>
 
-  <Import Project="..\Swarming Playground\Swarming Playground.projitems" Label="Shared" />
+  <ItemGroup>
+    <ProjectReference Include="..\Swarming Playground Shared\Swarming Playground Shared.csproj" />
+  </ItemGroup>
 
 </Project>

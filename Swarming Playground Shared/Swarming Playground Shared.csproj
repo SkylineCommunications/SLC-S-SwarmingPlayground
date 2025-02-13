@@ -1,0 +1,29 @@
+﻿<Project Sdk="Skyline.DataMiner.Sdk">
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net48</TargetFramework>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+  
+	<PropertyGroup>
+		<DataMinerType>AutomationScriptLibrary</DataMinerType>
+		<GenerateDataMinerPackage>False</GenerateDataMinerPackage>
+		<Version>1.0.0</Version>
+		<VersionComment>Initial Version</VersionComment>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Swarming Playground Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+  
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.5.1" />
+		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers" Version="1.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+</Project>

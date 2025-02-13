@@ -6,7 +6,7 @@ namespace LoadBalanceTests
     using NUnit.Framework;
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net.Messages;
-    using Swarming_Playground;
+    using Swarming_Playground_Shared;
 
     public class LoadBalanceByCountTests
     {
