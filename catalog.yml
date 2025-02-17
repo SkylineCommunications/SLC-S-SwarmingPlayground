@@ -59,7 +59,9 @@ documentation_url: https://aka.dataminer.services/swarming
 # Format: 'name <email> (url)'
 #   The name is required; max 256 characters.
 #   The email and url are optional, and should be in valid email/URL formats.
-owners: []
+owners:
+  - name: Robbe De Ghein
+    email: robbe.de.ghein@skyline.be
 # [Optional]
 # Tags that allow you to categorize your Catalog items.
 #   Max number of tags: 5
@@ -68,3 +70,4 @@ owners: []
 #   Cannot contain leading or trailing whitespace characters.
 tags:
   - Swarming
+  - High Availability
