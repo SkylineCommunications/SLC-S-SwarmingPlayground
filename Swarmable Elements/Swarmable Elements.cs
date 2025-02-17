@@ -82,15 +82,24 @@ namespace SwarmableElements
 
                         var oldState = hostAndState.Item2;
                         var newState = ToDisplayFriendlyState(elementStateEvent);
-                        if (oldState != newState)
+                        if(newState == ElementState.Deleted.ToString())
                         {
-                            // update state
+                            // deleting row
+                            _logger.Information($"Deleting row for element (deleted)");
+                            updater.RemoveRow(elementID.ToString());
+                        }
+                        else if (oldState != newState)
+                        {
+                            // updating cell: state
                             _logger.Information($"Updating state for element {elementID} to {newState}");
                             updater.UpdateCell(elementID.ToString(), _stateColumn, newState);
                         }
 
                         // update in memory cache
-                        _elementToHostAndState[elementID] = (newHostingAgentID, newState);
+                        if (newState == ElementState.Deleted.ToString())
+                            _elementToHostAndState.Remove(elementID);
+                        else
+                            _elementToHostAndState[elementID] = (newHostingAgentID, newState);
                     }
                 }
             };
@@ -102,14 +111,16 @@ namespace SwarmableElements
 
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
-            var elements = LoadElements();
+            var elements = LoadElements()
+                .Where(element => element.StateEvent.State != ElementState.Deleted)
+                .ToArray();
 
             lock (_elementToHostAndState)
             {
                 _elementToHostAndState = elements
                     .ToDictionary(
-                    tup => new ElementID(tup.Item1.DataMinerID, tup.Item1.ElementID),
-                    tup => (tup.Item1.HostingAgentID, ToDisplayFriendlyState(tup.Item2)));
+                    tup => new ElementID(tup.InfoEvent.DataMinerID, tup.InfoEvent.ElementID),
+                    tup => (tup.InfoEvent.HostingAgentID, ToDisplayFriendlyState(tup.StateEvent)));
             }
 
             return new GQIPage(elements.Select(ToRow).ToArray())
@@ -126,12 +137,12 @@ namespace SwarmableElements
                 _subscriptionID = null;
             }
         }
-        private GQIRow ToRow((ElementInfoEventMessage, ElementStateEventMessage) element)
+        private GQIRow ToRow((ElementInfoEventMessage InfoEvent, ElementStateEventMessage StateEvent) element)
         {
-            var elementInfo = element.Item1;
+            var elementInfo = element.InfoEvent;
             var elementId = new ElementID(elementInfo.DataMinerID, elementInfo.ElementID);
             var hostingAgent = ToName(elementInfo.HostingAgentID);
-            var elementDisplayState = ToDisplayFriendlyState(element.Item2);
+            var elementDisplayState = ToDisplayFriendlyState(element.StateEvent);
             return new GQIRow(
                 elementId.ToString(),
                 new[]
@@ -175,7 +186,7 @@ namespace SwarmableElements
             return dmaResponses;
         }
 
-        private (ElementInfoEventMessage, ElementStateEventMessage)[] LoadElements()
+        private (ElementInfoEventMessage InfoEvent, ElementStateEventMessage StateEvent)[] LoadElements()
         {
             if (_dms == null)
                 throw new ArgumentNullException($"{nameof(GQIDMS)} is null.");
