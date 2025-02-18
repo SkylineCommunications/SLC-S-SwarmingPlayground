@@ -5,9 +5,19 @@
     using Newtonsoft.Json;
     using Skyline.DataMiner.Automation;
 
-
+    /// <summary>
+    /// Helper class to get input from automation scripts
+    /// </summary>
     public static class Input
     {
+        /// <summary>
+        /// Get script parameter in automation script
+        /// </summary>
+        /// <param name="engine"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
         public static int[] GetScriptParamInts(this IEngine engine, string param)
         {
             var paramRaw = engine.GetScriptParam(param)?.Value;

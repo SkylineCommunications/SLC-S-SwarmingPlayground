@@ -8,8 +8,7 @@ using Skyline.DataMiner.Net.Swarming;
 namespace SwarmingPrerequisites
 {
     /// <summary>
-    /// Represents a data source.
-    /// See: https://aka.dataminer.services/gqi-external-data-source for a complete example.
+    /// Prerequisite check result
     /// </summary>
     [GQIMetaData(Name = "Swarming Prerequisites")]
     public sealed class SwarmingPrerequisites : IGQIDataSource, IGQIOnInit, IGQIInputArguments
@@ -40,8 +39,10 @@ namespace SwarmingPrerequisites
             new GQIStringColumn("Summary"),
         };
 
+        /// <inheritdoc />
         public GQIColumn[] GetColumns() => _columns;
 
+        /// <inheritdoc />
         public OnInitOutputArgs OnInit(OnInitInputArgs args)
         {
             if (args?.DMS == null)
@@ -53,8 +54,10 @@ namespace SwarmingPrerequisites
             return default;
         }
 
+        /// <inheritdoc />
         public GQIArgument[] GetInputArguments() => new[] { _analyzeAlarmIDsArgument, _onlyCheckLocalDMAArgument };
 
+        /// <inheritdoc />
         public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
         {
             if (args.TryGetArgumentValue(_analyzeAlarmIDsArgument, out var shouldAnalyzeAlarmIDs))
@@ -66,6 +69,7 @@ namespace SwarmingPrerequisites
             return default;
         }
 
+        /// <inheritdoc />
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
             var localInfo = _dms.SendMessages(new GetInfoMessage(InfoType.LocalDataMinerInfo))
