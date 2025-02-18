@@ -8,10 +8,14 @@ using Skyline.DataMiner.Net.Messages;
 
 namespace ElementHomeAgents
 {
+
+    /// <summary>
+    /// Reads the home property of the app and shows the dataminer agents
+    /// </summary>
     [GQIMetaData(Name = "Element Home Agents")]
     public sealed class ElementHomeAgents : IGQIDataSource, IGQIOnInit
     {
-        public const string SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME = "Swarming Playground Home DataMiner ID";
+        private const string SWARMING_PLAYGROUND_HOME_DMA_PROPERTY_NAME = "Swarming Playground Home DataMiner ID";
         
         private GQIDMS _dms;
         private IGQILogger _logger;
@@ -25,8 +29,10 @@ namespace ElementHomeAgents
             new GQIStringColumn("Home Agent Name"),
         };
 
+        /// <inheritdoc />
         public GQIColumn[] GetColumns() => _columns;
 
+        /// <inheritdoc />
         public OnInitOutputArgs OnInit(OnInitInputArgs args)
         {
             if (args?.DMS == null)
@@ -40,6 +46,7 @@ namespace ElementHomeAgents
             return default;
         }
 
+        /// <inheritdoc />
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
             var rows = LoadElements()

@@ -8,6 +8,9 @@ using Skyline.DataMiner.Net.Messages;
 
 namespace SwarmableElements
 {
+    /// <summary>
+    /// Shows the elements per agent with its state and swarmablility
+    /// </summary>
     [GQIMetaData(Name = "Swarmable Elements")]
     public sealed class SwarmableElements : IGQIDataSource, IGQIOnInit, IGQIUpdateable
     {
@@ -31,8 +34,10 @@ namespace SwarmableElements
             new GQIBooleanColumn("Swarmable"),
         };
 
+        /// <inheritdoc />
         public GQIColumn[] GetColumns() => _columns;
 
+        /// <inheritdoc />
         public OnInitOutputArgs OnInit(OnInitInputArgs args)
         {
             if (args?.DMS == null)
@@ -47,6 +52,7 @@ namespace SwarmableElements
             return default;
         }
 
+        /// <inheritdoc />
         public void OnStartUpdates(IGQIUpdater updater)
         {
             _logger.Debug("OnStartUpdates");
@@ -109,6 +115,7 @@ namespace SwarmableElements
                 new SubscriptionFilter(typeof(ElementStateEventMessage)));
         }
 
+        /// <inheritdoc />
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
             var elements = LoadElements()
@@ -129,6 +136,7 @@ namespace SwarmableElements
             };
         }
 
+        /// <inheritdoc />
         public void OnStopUpdates()
         {
             if (_subscriptionID != null)

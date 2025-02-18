@@ -8,6 +8,10 @@ using Skyline.DataMiner.Net.Messages;
 
 namespace ElementCountPerAgent
 {
+
+    /// <summary>
+    /// Element (swarmable + non-swarmable) Count Per AGent
+    /// </summary>
     [GQIMetaData(Name = "Element Count Per Agent")]
     public sealed class ElementCountPerAgent : IGQIDataSource, IGQIOnInit, IGQIUpdateable
     {
@@ -31,8 +35,10 @@ namespace ElementCountPerAgent
         private IGQILogger _logger;
         private string _subscriptionID;
 
+        /// <inheritdoc />
         public GQIColumn[] GetColumns() => _columns;
 
+        /// <inheritdoc />
         public OnInitOutputArgs OnInit(OnInitInputArgs args)
         {
             if (args?.DMS == null)
@@ -44,6 +50,7 @@ namespace ElementCountPerAgent
             return default;
         }
 
+        /// <inheritdoc />
         public void OnStartUpdates(IGQIUpdater updater)
         {
             _logger.Debug("OnStartUpdates");
@@ -79,6 +86,7 @@ namespace ElementCountPerAgent
 
         }
 
+        /// <inheritdoc />
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
             lock (_dictLock)
@@ -96,6 +104,7 @@ namespace ElementCountPerAgent
             }
         }
 
+        /// <inheritdoc />
         public void OnStopUpdates()
         {
             if (_subscriptionID != null)
