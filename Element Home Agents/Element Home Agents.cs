@@ -29,8 +29,10 @@ namespace ElementHomeAgents
             new GQIStringColumn("Home Agent Name"),
         };
 
+        /// <inheritdoc />
         public GQIColumn[] GetColumns() => _columns;
 
+        /// <inheritdoc />
         public OnInitOutputArgs OnInit(OnInitInputArgs args)
         {
             if (args?.DMS == null)
@@ -44,6 +46,7 @@ namespace ElementHomeAgents
             return default;
         }
 
+        /// <inheritdoc />
         public GQIPage GetNextPage(GetNextPageInputArgs args)
         {
             var rows = LoadElements()
