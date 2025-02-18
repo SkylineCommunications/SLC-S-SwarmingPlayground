@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
+    <!-- To use SLManagedAutomation -->
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
