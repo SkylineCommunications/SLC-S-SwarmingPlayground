@@ -6,7 +6,7 @@ Sample application to play around with [Swarming](https://aka.dataminer.services
 
 Swarming allows you to move functionalities within your DMS from agent to another with minimal downtime.
 
-![Overview](./Images/overview.png)
+![Overview](./Images/Overview.png)
 
 ## Key Features
 
