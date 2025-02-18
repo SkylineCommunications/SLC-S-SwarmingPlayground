@@ -71,4 +71,5 @@ owners:
 tags:
   - Swarming
   - High Availability
-  - skyline-communications
+  - high-availability
+  - swarming
