@@ -18,6 +18,6 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\Swarming Playground Shared\Swarming Playground Shared.csproj" />
+	  <ProjectReference Include="../Swarming Playground Shared/Swarming Playground Shared.csproj" />
 	</ItemGroup>
 </Project>
