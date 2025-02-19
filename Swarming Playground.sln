@@ -15,23 +15,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarmable Elements", "Swarm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarming Playground Tests", "Swarming Playground Tests\Swarming Playground Tests.csproj", "{76F8894D-78C4-4667-AE7F-21C7F001B857}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Enable Swarming", "Enable Swarming\Enable Swarming.csproj", "{5550F0AB-DA66-4A3E-AE86-F953E6C73076}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Enable Swarming", "Enable Swarming\Enable Swarming.csproj", "{5550F0AB-DA66-4A3E-AE86-F953E6C73076}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Element Home Agents", "Element Home Agents\Element Home Agents.csproj", "{53D6A732-6D2D-468B-9C47-C3A03FEB1B2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Element Home Agents", "Element Home Agents\Element Home Agents.csproj", "{53D6A732-6D2D-468B-9C47-C3A03FEB1B2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Load Balance Elements By Count", "Load Balance Elements By Count\Load Balance Elements By Count.csproj", "{48E4196D-EC80-4277-BD8A-262A0A4EE65D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Load Balance Elements By Count", "Load Balance Elements By Count\Load Balance Elements By Count.csproj", "{48E4196D-EC80-4277-BD8A-262A0A4EE65D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Save Cluster Snapshot", "Save Cluster Snapshot\Save Cluster Snapshot.csproj", "{EAACDB9D-B29C-493C-9E31-C6D086E0FFA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Save Cluster Snapshot", "Save Cluster Snapshot\Save Cluster Snapshot.csproj", "{EAACDB9D-B29C-493C-9E31-C6D086E0FFA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swarm Away All Elements From Agents", "Swarm Away All Elements From Agents\Swarm Away All Elements From Agents.csproj", "{D1862841-8FCA-4A51-8596-98C988E9A739}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarm Away All Elements From Agents", "Swarm Away All Elements From Agents\Swarm Away All Elements From Agents.csproj", "{D1862841-8FCA-4A51-8596-98C988E9A739}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swarm Back Elements To Last Snapshot", "Swarm Back Elements To Last Snapshot\Swarm Back Elements To Last Snapshot.csproj", "{47DD44CD-7C54-42E1-A1CB-149EA7D133D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarm Back Elements To Last Snapshot", "Swarm Back Elements To Last Snapshot\Swarm Back Elements To Last Snapshot.csproj", "{47DD44CD-7C54-42E1-A1CB-149EA7D133D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swarming Prerequisites", "Swarming Prerequisites\Swarming Prerequisites.csproj", "{46B7ABFF-BC75-4B87-AE15-BE48927636A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarming Prerequisites", "Swarming Prerequisites\Swarming Prerequisites.csproj", "{46B7ABFF-BC75-4B87-AE15-BE48927636A7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GQI Sources", "GQI Sources", "{358DB0C7-08D3-43FF-8229-723F009135A6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{76B0B6C8-C55D-4EE3-8165-B1AF7AC5F8BB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Automation Scripts", "Automation Scripts", "{76B0B6C8-C55D-4EE3-8165-B1AF7AC5F8BB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AD43EDE7-84CF-4A89-BEDB-55A15C144C25}"
 EndProject
