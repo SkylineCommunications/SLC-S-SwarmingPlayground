@@ -106,7 +106,7 @@ namespace SwarmBackElementsToLastSnapshot
 
                 engine.Log($"Swarming elements to agent {targetAgentId}: " + string.Join(", ", elements.Select(info => info.Name)));
 
-                var responses = SwarmingHelper.Create(engine.SendSLNetMessage)
+                var responses = SwarmingHelper.Create(engine.GetUserConnection())
                     .SwarmElements(elements.Select(info => new ElementID(info.DataMinerID, info.ElementID)).ToArray())
                     .ToAgent(targetAgentId);
 

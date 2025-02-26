@@ -69,7 +69,7 @@ namespace SwarmElements
             if (!elementKeys.Any())
                 return; // nothing to do here
 
-            var swarmingResults = SwarmingHelper.Create(Engine.SLNetRaw)
+            var swarmingResults = SwarmingHelper.Create(engine.GetUserConnection())
                 .SwarmElements(elementKeys)
                 .ToAgent(targetAgentId);
 
