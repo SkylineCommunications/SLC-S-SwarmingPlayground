@@ -118,6 +118,8 @@ namespace ElementCountPerAgent
                 _dms.GetConnection().RemoveSubscription(_subscriptionID);
                 _subscriptionID = null;
             }
+
+            _initialDataFetched.Dispose();
         }
 
         private void ProcessQueuedUpdates()

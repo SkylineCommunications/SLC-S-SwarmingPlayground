@@ -11,10 +11,10 @@ using Skyline.DataMiner.Net.Messages;
 
 namespace SwarmableElements
 {
-    /// <summary>
-    /// Shows the elements per agent with its state and swarmablility
-    /// </summary>
-    [GQIMetaData(Name = "Swarmable Elements")]
+	/// <summary>
+	/// Shows the elements per agent with its state and swarmability
+	/// </summary>
+	[GQIMetaData(Name = "Swarmable Elements")]
     public sealed class SwarmableElements : IGQIDataSource, IGQIOnInit, IGQIUpdateable
     {
         private readonly GQIColumn[] _columns = new GQIColumn[]
@@ -122,6 +122,8 @@ namespace SwarmableElements
                 _dms.GetConnection().RemoveSubscription(_subscriptionID);
                 _subscriptionID = null;
             }
+
+            _initialDataFetched.Dispose();
         }
 
         private void ProcessQueuedUpdates()
