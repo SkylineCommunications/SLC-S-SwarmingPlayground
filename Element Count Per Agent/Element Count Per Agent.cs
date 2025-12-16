@@ -28,8 +28,8 @@ namespace ElementCountPerAgent
             new GQIIntColumn("Total Element Count"),
         };
 
-        private Dictionary<int, RowData> _rowCache = new Dictionary<int, RowData>();
-        private Dictionary<ElementID, LiteElementInfoEvent> _elementInfoCache = new Dictionary<ElementID, LiteElementInfoEvent>();
+        private readonly Dictionary<int, RowData> _rowCache = new Dictionary<int, RowData>();
+        private readonly Dictionary<ElementID, LiteElementInfoEvent> _elementInfoCache = new Dictionary<ElementID, LiteElementInfoEvent>();
 
         private GQIDMS _dms;
         private IGQILogger _logger;
