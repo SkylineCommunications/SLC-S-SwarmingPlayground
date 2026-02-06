@@ -142,7 +142,7 @@ namespace Swarming_Playground_Shared
 		}
 
 		/// <summary>
-		/// Swarm elements betewen DMAs to reflect the in memory configuration.
+		/// Swarm elements between DMAs to reflect the in memory configuration.
 		/// </summary>
 		public void SwarmElements()
         {
@@ -218,41 +218,6 @@ namespace Swarming_Playground_Shared
 	        }
         }
 
-		/// <summary>
-		/// Recalculate the elements per agent in memory.
-		/// Move as many elements as possible away from the source agents.
-		/// </summary>
-		public void RedistributeAwayFromAgents(int[] sourceAgentIds)
-        {
-            var targetBuckets = _agentToElements
-                .Where(bucket => bucket.Key.ConnectionState == DataMinerAgentConnectionState.Normal
-                        && !sourceAgentIds.Contains(bucket.Key.ID))
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-            var sourceBuckets = _agentToElements
-                .Where(bucket => sourceAgentIds.Contains(bucket.Key.ID))
-                .Select(bucket => (bucket.Key, bucket.Value.Where(elementInfo => elementInfo.IsSwarmable).ToList()))
-                .Where(bucket => bucket.Item2.Any()) // remove empty buckets for agents that don't have any swarmable elements
-                .ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
-
-            while (sourceBuckets.Any())
-            {
-                var smallestBucketSize = targetBuckets.Min(bucket => bucket.Value.Count);
-                var targetBucket = targetBuckets.First(bucket => bucket.Value.Count == smallestBucketSize);
-
-                var sourceBucket = sourceBuckets.First();
-
-                var itemToMove = sourceBucket.Value.Take(1).First();
-                sourceBucket.Value.Remove(itemToMove);
-                targetBucket.Value.Add(itemToMove);
-
-                if (!sourceBucket.Value.Any())
-                    sourceBuckets.Remove(sourceBucket.Key);
-            }
-
-            _agentToElements = targetBuckets;
-        }
-
         public void RedistributeElementsAwayFromAgents(int[] sourceAgentIds, Func<ElementInfoEventMessage, bool> isSwarmable)
         {
 	        _agentToElements = RedistributeAwayFromAgents(sourceAgentIds, _agentToElements, isSwarmable);
@@ -262,7 +227,6 @@ namespace Swarming_Playground_Shared
         {
 	        _agentToBookings = RedistributeAwayFromAgents(sourceAgentIds, _agentToBookings, isSwarmable);
         }
-
 
         private Dictionary<GetDataMinerInfoResponseMessage, List<T>> RedistributeAwayFromAgents<T>(
 	        int[] sourceAgentIds,

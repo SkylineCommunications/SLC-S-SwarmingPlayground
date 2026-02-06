@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <DMSScript options="272" xmlns="http://www.skyline.be/automation">
-	<Name>Swarm Away All Elements From Agents</Name>
+	<Name>Swarm Away All Objects From Agents</Name>
 	<Description></Description>
 	<Type>Automation</Type>
 	<Author>RobbeDG</Author>
@@ -27,7 +27,7 @@
 
 	<Script>
 		<Exe id="1" type="csharp">
-			<Value><![CDATA[[Project:Swarm Away All Elements From Agents]]]></Value>
+			<Value><![CDATA[[Project:Swarm Away All Objects From Agents]]]></Value>
 			<!--<Param type="debug">true</Param>-->
 			<Message></Message>
 		</Exe>

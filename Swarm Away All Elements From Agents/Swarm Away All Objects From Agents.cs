@@ -1,14 +1,13 @@
 using System;
 using System.Linq;
 using Newtonsoft.Json;
-using Skyline.DataMiner.Analytics.Clustering;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Net.Messages.SLDataGateway;
 using Skyline.DataMiner.Net.ResourceManager.Objects;
 using Swarming_Playground_Shared;
 
-namespace SwarmAwayAllElementsFromAgents
+namespace SwarmAwayAllObjectsFromAgents
 {
     /// <summary>
     /// Represents a DataMiner Automation script.
