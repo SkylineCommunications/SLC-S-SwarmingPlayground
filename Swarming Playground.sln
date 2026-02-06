@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.10.35122.118
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11415.281
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Swarming Playground", "Swarming Playground\Swarming Playground.csproj", "{7AF3B521-5545-4DFE-8C4F-22B4C24CB22E}"
 EndProject
@@ -34,6 +34,27 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Automation Scripts", "Automation Scripts", "{76B0B6C8-C55D-4EE3-8165-B1AF7AC5F8BB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AD43EDE7-84CF-4A89-BEDB-55A15C144C25}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Internal", "Internal", "{A2644274-88A6-4F1A-8183-4F4CE3135526}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Code Analysis", "Code Analysis", "{32BCA3BD-6DB1-4FA9-93DB-150E8262CF65}"
+	ProjectSection(SolutionItems) = preProject
+		Internal\Code Analysis\qaction-debug.ruleset = Internal\Code Analysis\qaction-debug.ruleset
+		Internal\Code Analysis\qaction-release.ruleset = Internal\Code Analysis\qaction-release.ruleset
+		Internal\Code Analysis\stylecop.json = Internal\Code Analysis\stylecop.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swarm Bookings", "Swarm Bookings\Swarm Bookings.csproj", "{D2141709-C369-49A0-B76B-31FBD5DDEC2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swarmable Bookings", "Swarmable Bookings\Swarmable Bookings.csproj", "{469D9912-6D8F-4B13-9844-870C098ECDF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Booking Count Per Agent", "Booking Count Per Agent\Booking Count Per Agent.csproj", "{D9E6C155-1C08-49EF-AF33-7E143A7E5DFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Load Balance Bookings By Count", "Load Balance Bookings By Count\Load Balance Bookings By Count.csproj", "{281DD6BF-9BA6-4440-9928-794D682379C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Load Balance By Count", "Load Balance By Count\Load Balance By Count.csproj", "{F5A678BB-EEC0-448C-8188-9FC20FE2F647}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Object Count Per Agent", "Object Count Per Agent\Object Count Per Agent.csproj", "{22EA46BB-B3BF-4405-8435-EA26E08A82DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +114,30 @@ Global
 		{46B7ABFF-BC75-4B87-AE15-BE48927636A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46B7ABFF-BC75-4B87-AE15-BE48927636A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46B7ABFF-BC75-4B87-AE15-BE48927636A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2141709-C369-49A0-B76B-31FBD5DDEC2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2141709-C369-49A0-B76B-31FBD5DDEC2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2141709-C369-49A0-B76B-31FBD5DDEC2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2141709-C369-49A0-B76B-31FBD5DDEC2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{469D9912-6D8F-4B13-9844-870C098ECDF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{469D9912-6D8F-4B13-9844-870C098ECDF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{469D9912-6D8F-4B13-9844-870C098ECDF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{469D9912-6D8F-4B13-9844-870C098ECDF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9E6C155-1C08-49EF-AF33-7E143A7E5DFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9E6C155-1C08-49EF-AF33-7E143A7E5DFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9E6C155-1C08-49EF-AF33-7E143A7E5DFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9E6C155-1C08-49EF-AF33-7E143A7E5DFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{281DD6BF-9BA6-4440-9928-794D682379C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{281DD6BF-9BA6-4440-9928-794D682379C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{281DD6BF-9BA6-4440-9928-794D682379C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{281DD6BF-9BA6-4440-9928-794D682379C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5A678BB-EEC0-448C-8188-9FC20FE2F647}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5A678BB-EEC0-448C-8188-9FC20FE2F647}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5A678BB-EEC0-448C-8188-9FC20FE2F647}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5A678BB-EEC0-448C-8188-9FC20FE2F647}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22EA46BB-B3BF-4405-8435-EA26E08A82DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22EA46BB-B3BF-4405-8435-EA26E08A82DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22EA46BB-B3BF-4405-8435-EA26E08A82DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22EA46BB-B3BF-4405-8435-EA26E08A82DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -110,6 +155,13 @@ Global
 		{D1862841-8FCA-4A51-8596-98C988E9A739} = {76B0B6C8-C55D-4EE3-8165-B1AF7AC5F8BB}
 		{47DD44CD-7C54-42E1-A1CB-149EA7D133D7} = {76B0B6C8-C55D-4EE3-8165-B1AF7AC5F8BB}
 		{46B7ABFF-BC75-4B87-AE15-BE48927636A7} = {358DB0C7-08D3-43FF-8229-723F009135A6}
+		{32BCA3BD-6DB1-4FA9-93DB-150E8262CF65} = {A2644274-88A6-4F1A-8183-4F4CE3135526}
+		{D2141709-C369-49A0-B76B-31FBD5DDEC2E} = {76B0B6C8-C55D-4EE3-8165-B1AF7AC5F8BB}
+		{469D9912-6D8F-4B13-9844-870C098ECDF5} = {358DB0C7-08D3-43FF-8229-723F009135A6}
+		{D9E6C155-1C08-49EF-AF33-7E143A7E5DFD} = {358DB0C7-08D3-43FF-8229-723F009135A6}
+		{281DD6BF-9BA6-4440-9928-794D682379C0} = {76B0B6C8-C55D-4EE3-8165-B1AF7AC5F8BB}
+		{F5A678BB-EEC0-448C-8188-9FC20FE2F647} = {76B0B6C8-C55D-4EE3-8165-B1AF7AC5F8BB}
+		{22EA46BB-B3BF-4405-8435-EA26E08A82DC} = {358DB0C7-08D3-43FF-8229-723F009135A6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD494CCA-47FA-45A9-9D6E-A268663B9C40}

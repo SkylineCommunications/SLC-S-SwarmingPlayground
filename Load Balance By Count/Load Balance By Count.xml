@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <DMSScript options="272" xmlns="http://www.skyline.be/automation">
-	<Name>Swarm Away All Elements From Agents</Name>
+	<Name>Load Balance By Count</Name>
 	<Description></Description>
 	<Type>Automation</Type>
-	<Author>RobbeDG</Author>
+	<Author>PCU</Author>
 	<CheckSets>FALSE</CheckSets>
 	<Folder>Swarming Playground</Folder>
+	<Interactivity>Auto</Interactivity>
 
 	<Protocols>
 	</Protocols>
@@ -14,20 +15,17 @@
 	</Memory>
 
 	<Parameters>
-		<ScriptParameter id="2" type="string" values="">
-			<Description>Source Agent IDs</Description>
-		</ScriptParameter>
-		<ScriptParameter id="3" type="string" values="">
+		<ScriptParameter id="1" type="string" values="">
 			<Description>Swarm Elements</Description>
 		</ScriptParameter>
-		<ScriptParameter id="4" type="string" values="">
+		<ScriptParameter id="2" type="string" values="">
 			<Description>Swarm Bookings</Description>
 		</ScriptParameter>
 	</Parameters>
 
 	<Script>
-		<Exe id="1" type="csharp">
-			<Value><![CDATA[[Project:Swarm Away All Elements From Agents]]]></Value>
+		<Exe id="201" type="csharp">
+			<Value><![CDATA[[Project:Load Balance By Count]]]></Value>
 			<!--<Param type="debug">true</Param>-->
 			<Message></Message>
 		</Exe>

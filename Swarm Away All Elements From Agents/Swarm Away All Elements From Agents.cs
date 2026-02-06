@@ -1,7 +1,11 @@
 using System;
 using System.Linq;
+using Newtonsoft.Json;
+using Skyline.DataMiner.Analytics.Clustering;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
+using Skyline.DataMiner.Net.Messages.SLDataGateway;
+using Skyline.DataMiner.Net.ResourceManager.Objects;
 using Swarming_Playground_Shared;
 
 namespace SwarmAwayAllElementsFromAgents
@@ -12,12 +16,16 @@ namespace SwarmAwayAllElementsFromAgents
     public class Script
     {
         private const string PARAM_SOURCE_AGENT_IDS = "Source Agent IDs";
+        private const string ParamSwarmElements = "Swarm Elements";
+        private const string ParamSwarmBookings = "Swarm Bookings";
 
-        /// <summary>
-        /// The script entry point.
-        /// </summary>
-        /// <param name="engine">Link with SLAutomation process.</param>
-        public void Run(IEngine engine)
+        private IEngine _engine;
+
+		/// <summary>
+		/// The script entry point.
+		/// </summary>
+		/// <param name="engine">Link with SLAutomation process.</param>
+		public void Run(IEngine engine)
         {
             try
             {
@@ -52,23 +60,24 @@ namespace SwarmAwayAllElementsFromAgents
 
         private void RunSafe(IEngine engine)
         {
+	        _engine = engine;
+
             var agentInfos = engine.GetAgents();
 
             if (!Check.IfSwarmingIsEnabled(agentInfos))
                 engine.ExitFail("Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
-            var elementInfos = engine.GetElements();
 
             var sourceAgentIds = engine.GetScriptParamInts(PARAM_SOURCE_AGENT_IDS);
 
             if (!sourceAgentIds.Any())
-                engine.ExitFail("Must at least provide one element!");
+                engine.ExitFail("Must at least provide one agent!");
 
             if (!agentInfos.Select(agentinfo => agentinfo.ID).Except(sourceAgentIds).Any())
-                engine.ExitFail("Cannot swarm away all elements from all agents");
+                engine.ExitFail("Cannot swarm away all elements/bookings from all agents");
 
             if (!agentInfos.Where(agentInfo => agentInfo.ConnectionState == DataMinerAgentConnectionState.Normal).Select(agentinfo => agentinfo.ID).Except(sourceAgentIds).Any())
-                engine.ExitFail("Must at least provide one element!");
+                engine.ExitFail("Must at least provide one agent!");
 
             foreach (var sourceAgentId in sourceAgentIds)
             {
@@ -76,11 +85,69 @@ namespace SwarmAwayAllElementsFromAgents
                     engine.ExitFail($"Source agent '{sourceAgentId}' is not part of the cluster");
             }
 
-            var clusterConfig = new ClusterConfig(engine, agentInfos, elementInfos);
+			var clusterConfig = new ClusterConfig(_engine, agentInfos);
+			SwarmElementsAwayIfEnabled(clusterConfig, sourceAgentIds);
 
-            clusterConfig.RedistributeAwayFromAgents(sourceAgentIds);
-
-            clusterConfig.SwarmElements();
+			SwarmBookingsAwayIfEnabled(clusterConfig, sourceAgentIds);
         }
-    }
+
+        private void SwarmElementsAwayIfEnabled(ClusterConfig config, int[] sourceAgentIds)
+        {
+	        if (!IsSwarmingFlagEnabled(ParamSwarmElements))
+	        {
+				_engine.Log("Not swarming elements since option is not enabled.");
+				return;
+			}
+
+	        _engine.Log("Swarming elements away from agent");
+
+			var elementInfos = _engine.GetElements();
+	        config.InitializeAgentToElements(elementInfos);
+			config.RedistributeElementsAwayFromAgents(sourceAgentIds, element => element.IsSwarmable);
+	        config.SwarmElements();
+		}
+
+        private void SwarmBookingsAwayIfEnabled(ClusterConfig config, int[] sourceAgentIds)
+        {
+	        if (!IsSwarmingFlagEnabled(ParamSwarmBookings))
+	        {
+		        _engine.Log("Not swarming bookings since option is not enabled.");
+		        return;
+	        }
+
+			_engine.Log("Swarming bookings away from agent");
+
+	        var rmHelper = new ResourceManagerHelper(_engine.SendSLNetSingleResponseMessage);
+	        var bookings = rmHelper.GetReservationInstances(new TRUEFilterElement<ReservationInstance>());
+
+			config.InitializeAgentToBookings(bookings);
+	        config.RedistributeBookingsAwayFromAgents(sourceAgentIds, booking => booking.Status != ReservationStatus.Ongoing);
+	        config.SwarmBookings();
+		}
+
+        private bool IsSwarmingFlagEnabled(string param)
+        {
+	        var swarmBookingsRaw = _engine.GetScriptParam(param)?.Value;
+	        bool swarmBookingsEnabled;
+	        try
+	        {
+		        swarmBookingsEnabled = JsonConvert.DeserializeObject<string[]>(swarmBookingsRaw)
+			        .Select(bool.Parse).FirstOrDefault();
+	        }
+	        catch (JsonSerializationException)
+	        {
+		        swarmBookingsEnabled = swarmBookingsRaw.Replace(" ", string.Empty).Split(',').Select(one =>
+		        {
+			        if (!bool.TryParse(one, out var result))
+			        {
+				        throw new ArgumentException($"Cannot parse {one} to valid {nameof(Guid)}");
+			        }
+
+			        return result;
+		        }).FirstOrDefault();
+	        }
+
+	        return swarmBookingsEnabled;
+        }
+	}
 }
