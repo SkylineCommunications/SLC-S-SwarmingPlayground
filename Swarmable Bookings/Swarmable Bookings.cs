@@ -67,8 +67,6 @@ namespace SwarmableBookings
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
 			_logger.Information("GetNextPage");
-			// TODO check if this is UTC, started bookings?
-			// Fetch all bookings that have not started yet.
 			var bookings = _rmHelper.GetReservationInstances(new TRUEFilterElement<ReservationInstance>());
 			return new GQIPage(bookings.Select(SelectRow).ToArray());
 		}

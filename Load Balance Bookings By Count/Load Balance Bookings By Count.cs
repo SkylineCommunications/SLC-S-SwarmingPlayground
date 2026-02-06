@@ -72,7 +72,6 @@ namespace LoadBalanceBookingsByCount
 				engine.ExitFail(
 					"Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
-			// TODO check if licensed ?
 			var swarmBookingsRaw = _engine.GetScriptParam(PARAM_SWARM_BOOKINGS)?.Value;
 			bool swarmBookingsEnabled;
 			try

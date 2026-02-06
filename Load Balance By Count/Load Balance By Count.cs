@@ -69,8 +69,6 @@ namespace LoadBalanceByCount
 				engine.ExitFail(
 					"Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
-			// TODO check if licensed ?
-
 			var config = new ClusterConfig(engine, _agentInfos);
 
 			SwarmElementsIfEnabled(config);
