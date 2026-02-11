@@ -67,7 +67,9 @@ namespace SwarmableBookings
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
 			_logger.Debug("GetNextPage");
-			var bookings = _rmHelper.GetReservationInstances(new TRUEFilterElement<ReservationInstance>());
+			var filter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
+				.AND(ReservationInstanceExposers.Status.NotEqual((int) ReservationStatus.Canceled));
+			var bookings = _rmHelper.GetReservationInstances(filter);
 			return new GQIPage(bookings.Select(SelectRow).ToArray());
 		}
 
