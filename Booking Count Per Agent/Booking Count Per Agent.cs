@@ -2,9 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Skyline.DataMiner.Analytics.GenericInterface;
 using Skyline.DataMiner.Net;
 using Skyline.DataMiner.Net.Exceptions;
+using Skyline.DataMiner.Net.Helper;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Net.Messages.SLDataGateway;
 using Skyline.DataMiner.Net.ResourceManager.Objects;
@@ -22,10 +24,13 @@ namespace BookingCountPerAgent
 		private ResourceManagerHelper _rmHelper;
 		private IGQIUpdater _updater;
 		private Dictionary<int, GetDataMinerInfoResponseMessage> _dmInfoPerId = new Dictionary<int, GetDataMinerInfoResponseMessage>();
-		private readonly Dictionary<Guid, ReservationInstance> _bookingCache = new Dictionary<Guid, ReservationInstance>();
-		private readonly Dictionary<int, int> _amountOfBookingsPerAgent = new Dictionary<int, int>();
 		private readonly ConcurrentDictionary<string, GQIRow> _currentRows = new ConcurrentDictionary<string, GQIRow>();
 		private string _subscriptionSetId = $"DS-Booking-Count-Per-Agent-{Guid.NewGuid()}";
+		private Timer _debounceTimer;
+		private readonly object _timerLock = new object();
+		private volatile bool _eventReceived = false;
+		private readonly TimeSpan _debounce = TimeSpan.FromSeconds(3);
+
 
 		public GQIColumn[] GetColumns()
 		{
@@ -56,6 +61,12 @@ namespace BookingCountPerAgent
 			InitializeRowsForAllAgents();
 
 			_dms.GetConnection().OnNewMessage += HandleBookingUpdate;
+
+			lock (_timerLock)
+			{
+				_debounceTimer = new Timer(_ => DebouncedRefresh(), null,
+					Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+			}
 
 			var tracker = _dms.GetConnection().TrackAddSubscription(
 				_subscriptionSetId,
@@ -104,101 +115,80 @@ namespace BookingCountPerAgent
 
 		private void HandleBookingUpdate(object sender, NewMessageEventArgs args)
 		{
-			_logger.Debug("Incoming update");
+			// TODO remove this
+			_logger.Information($"Message received");
 
-			if (!(args.Message is ResourceManagerEventMessage rmEvent))
+			if (!(args.Message is ResourceManagerEventMessage))
 			{
 				return;
 			}
 
-			lock (_currentRows)
+			_eventReceived = true;
+
+			lock (_timerLock)
 			{
-				foreach (var deletedBooking in rmEvent.DeletedReservationInstanceObjects)
+				_debounceTimer?.Change(_debounce, Timeout.InfiniteTimeSpan);
+			}
+		}
+
+		private void DebouncedRefresh()
+		{
+			try
+			{
+				if (!_eventReceived)
+					return;
+
+				_eventReceived = false;
+
+				var baseFilter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
+					.AND(ReservationInstanceExposers.Status.NotEqual((int)ReservationStatus.Canceled));
+
+				foreach (var dmInfo in _dmInfoPerId)
 				{
-					var hostingAgentId = deletedBooking.HostingAgentID;
+					var count = (int) _rmHelper.CountReservationInstances(baseFilter.AND(ReservationInstanceExposers.HostingAgentID.Equal(dmInfo.Key)));
 
-					_amountOfBookingsPerAgent[hostingAgentId] -= 1;
-					var row = _currentRows[hostingAgentId.ToString()];
-					row.Cells[3].Value = _amountOfBookingsPerAgent[hostingAgentId];
-
-					_bookingCache.Remove(deletedBooking.ID);
+					var row = _currentRows[dmInfo.Key.ToString()];
+					row.Cells[3].Value = count;
+					_updater.UpdateRow(row);
 				}
-
-				foreach (var updatedBooking in rmEvent.UpdatedReservationInstances)
-				{
-					if (!_bookingCache.TryGetValue(updatedBooking.ID, out var oldBooking))
-					{
-						// Newly added booking
-						// Add booking to cache
-						_bookingCache.Add(updatedBooking.ID, updatedBooking);
-
-						// Change _amountOfBookingsPerAgent
-						var amountOfBookings = _amountOfBookingsPerAgent[updatedBooking.HostingAgentID];
-						amountOfBookings += 1;
-
-						// Update row of new hosting agent
-						var row = _currentRows[updatedBooking.HostingAgentID.ToString()];
-						row.Cells[3].Value = amountOfBookings;
-						_updater.UpdateRow(row);
-						continue;
-					}
-
-					// Update of booking
-					// Update _amountOfBookingsPerAgent on old hosting agent (-1) and update row
-					// Update _amountOfBookingsPerAgent on new hosting agent (+1) and update row
-					// Update _bookingCache
-					var oldHostingId = oldBooking.HostingAgentID;
-					_amountOfBookingsPerAgent[oldHostingId] -= 1;
-					_amountOfBookingsPerAgent[updatedBooking.HostingAgentID] += 1;
-					var rowOldAgent = _currentRows[oldBooking.HostingAgentID.ToString()];
-					rowOldAgent.Cells[3].Value = _amountOfBookingsPerAgent[oldHostingId];
-					var rowNewAgent = _currentRows[updatedBooking.HostingAgentID.ToString()];
-					rowNewAgent.Cells[3].Value = _amountOfBookingsPerAgent[updatedBooking.HostingAgentID];
-					_updater.UpdateRow(rowOldAgent);
-					_updater.UpdateRow(rowNewAgent);
-
-					_bookingCache[updatedBooking.ID] = updatedBooking;
-				}
+			}
+			catch (Exception ex)
+			{
+				_logger.Error($"DebouncedRefresh failed: {ex}");
 			}
 		}
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
+			_logger.Debug("GetNextPage");
+
 			try
 			{
-				_logger.Debug("GetNextPage");
-
-				var bookingsPerHostingAgents = _rmHelper
-					.GetReservationInstances(new TRUEFilterElement<ReservationInstance>())
-					.GroupBy(r => r.HostingAgentID)
-					.ToDictionary(g => g.Key, g => g.ToList());
-				foreach (var bookingsPerAgent in bookingsPerHostingAgents)
+				if (_dmInfoPerId.IsNullOrEmpty())
 				{
-					if (!_dmInfoPerId.TryGetValue(bookingsPerAgent.Key, out var dmInfo))
-					{
-						GetAgentsInCluster();
-						dmInfo = _dmInfoPerId[bookingsPerAgent.Key];
-					}
-
-					_amountOfBookingsPerAgent.Add(dmInfo.ID, bookingsPerAgent.Value.Count);
-					var cells = new GQICell[]
-					{
-						new GQICell() {Value = dmInfo.ID},
-						new GQICell() {Value = dmInfo.AgentName},
-						new GQICell() {Value = dmInfo.ConnectionState.ToString()},
-						new GQICell() {Value = bookingsPerAgent.Value.Count}
-					};
-
-					var row = new GQIRow(bookingsPerAgent.Key.ToString(), cells);
-					_currentRows[row.Key] = row;
-
-					foreach (var booking in bookingsPerAgent.Value)
-					{
-						_bookingCache.Add(booking.ID, booking);
-					}
+					GetAgentsInCluster();
 				}
 
-				return new GQIPage(_currentRows.Select(kv => kv.Value).ToArray())
+				foreach (var dmInfo in _dmInfoPerId)
+				{
+					var filter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
+						.AND(ReservationInstanceExposers.Status.NotEqual((int) ReservationStatus.Canceled))
+						.AND(ReservationInstanceExposers.HostingAgentID.Equal(dmInfo.Key));
+					var bookingCount = (int) _rmHelper.CountReservationInstances(filter);
+
+					var cells = new GQICell[]
+					{
+						new GQICell() {Value = dmInfo.Value.ID},
+						new GQICell() {Value = dmInfo.Value.AgentName},
+						new GQICell() {Value = dmInfo.Value.ConnectionState.ToString()},
+						new GQICell() {Value = bookingCount}
+					};
+
+					var row = new GQIRow(dmInfo.Key.ToString(), cells);
+					_currentRows[row.Key] = row;
+				}
+
+				return new GQIPage(_currentRows.Select(kv => kv.Value).OrderBy(one => one.Key).ToArray())
 				{
 					HasNextPage = false
 				};
@@ -212,11 +202,23 @@ namespace BookingCountPerAgent
 
 		public void OnStopUpdates()
 		{
-			_bookingCache.Clear();
-			_currentRows.Clear();
+			try
+			{
+				_dms.GetConnection().ClearSubscriptions(_subscriptionSetId);
+				_subscriptionSetId = null;
 
-			_dms.GetConnection().ClearSubscriptions(_subscriptionSetId);
-			_subscriptionSetId = null;
+				lock (_timerLock)
+				{
+					_debounceTimer?.Dispose();
+					_debounceTimer = null;
+				}
+
+				_currentRows.Clear();
+			}
+			catch (Exception ex)
+			{
+				_logger.Error($"OnStopUpdates error: {ex}");
+			}
 		}
 	}
 }

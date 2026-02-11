@@ -97,7 +97,9 @@ namespace LoadBalanceByCount
 			}
 
 			var rmHelper = new ResourceManagerHelper(_engine.SendSLNetSingleResponseMessage);
-			var bookings = rmHelper.GetReservationInstances(new TRUEFilterElement<ReservationInstance>());
+			var filter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
+				.AND(ReservationInstanceExposers.Status.NotEqual((int) ReservationStatus.Canceled));
+			var bookings = rmHelper.GetReservationInstances(filter);
 
 			config.InitializeAgentToBookings(bookings);
 			config.RedistributeBookingsByCount(booking => booking.Status == ReservationStatus.Ongoing, booking => booking.Status != ReservationStatus.Ongoing);

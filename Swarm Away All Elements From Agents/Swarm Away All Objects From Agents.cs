@@ -116,7 +116,9 @@ namespace SwarmAwayAllObjectsFromAgents
 			_engine.Log("Swarming bookings away from agent");
 
 	        var rmHelper = new ResourceManagerHelper(_engine.SendSLNetSingleResponseMessage);
-	        var bookings = rmHelper.GetReservationInstances(new TRUEFilterElement<ReservationInstance>());
+	        var now = DateTime.UtcNow;
+	        var filter = ReservationInstanceExposers.Start.LessThan(now.Date.AddDays(14)).AND(ReservationInstanceExposers.End.GreaterThan(now));
+	        var bookings = rmHelper.GetReservationInstances(filter);
 
 			config.InitializeAgentToBookings(bookings);
 	        config.RedistributeBookingsAwayFromAgents(sourceAgentIds, booking => booking.Status != ReservationStatus.Ongoing);

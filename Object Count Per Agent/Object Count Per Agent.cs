@@ -153,7 +153,9 @@ namespace ObjectCountPerAgent
 				}
 
 				var rmHelper = new ResourceManagerHelper(_dms.SendMessage);
-				var bookings = rmHelper.GetReservationInstances(new TRUEFilterElement<ReservationInstance>());
+				var filter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
+					.AND(ReservationInstanceExposers.Status.NotEqual((int)ReservationStatus.Canceled));
+				var bookings = rmHelper.GetReservationInstances(filter);
 
 				lock (_rows)
 				{
