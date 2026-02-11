@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Skyline.DataMiner.Automation;
@@ -60,7 +59,6 @@ namespace LoadBalanceByCount
 
 		private void RunSafe(IEngine engine)
 		{
-			engine.GenerateInformation("This script is running");
 			_engine = engine;
 
 			_agentInfos = _engine.GetAgents();
@@ -78,7 +76,7 @@ namespace LoadBalanceByCount
 
 		private void SwarmElementsIfEnabled(ClusterConfig config)
 		{
-			if (!IsSwarmingFlagEnabled(ParamSwarmElements))
+			if (!_engine.IsSwarmingFlagEnabled(ParamSwarmElements))
 			{
 				_engine.Log("Not swarming elements since option is not enabled.");
 				return;
@@ -92,7 +90,7 @@ namespace LoadBalanceByCount
 
 		private void SwarmBookingsIfEnabled(ClusterConfig config)
 		{
-			if (!IsSwarmingFlagEnabled(ParamSwarmBookings))
+			if (!_engine.IsSwarmingFlagEnabled(ParamSwarmBookings))
 			{
 				_engine.Log("Not swarming bookings since option is not enabled.");
 				return;
@@ -104,31 +102,6 @@ namespace LoadBalanceByCount
 			config.InitializeAgentToBookings(bookings);
 			config.RedistributeBookingsByCount(booking => booking.Status == ReservationStatus.Ongoing, booking => booking.Status != ReservationStatus.Ongoing);
 			config.SwarmBookings();
-		}
-
-		private bool IsSwarmingFlagEnabled(string param)
-		{
-			var swarmBookingsRaw = _engine.GetScriptParam(param)?.Value;
-			bool swarmBookingsEnabled;
-			try
-			{
-				swarmBookingsEnabled = JsonConvert.DeserializeObject<string[]>(swarmBookingsRaw)
-					.Select(bool.Parse).FirstOrDefault();
-			}
-			catch (JsonSerializationException)
-			{
-				swarmBookingsEnabled = swarmBookingsRaw.Replace(" ", string.Empty).Split(',').Select(one =>
-				{
-					if (!bool.TryParse(one, out var result))
-					{
-						throw new ArgumentException($"Cannot parse {one} to valid {nameof(Guid)}");
-					}
-
-					return result;
-				}).FirstOrDefault();
-			}
-
-			return swarmBookingsEnabled;
 		}
 	}
 }

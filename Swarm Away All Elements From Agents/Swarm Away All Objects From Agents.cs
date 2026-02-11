@@ -66,7 +66,6 @@ namespace SwarmAwayAllObjectsFromAgents
             if (!Check.IfSwarmingIsEnabled(agentInfos))
                 engine.ExitFail("Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
-
             var sourceAgentIds = engine.GetScriptParamInts(PARAM_SOURCE_AGENT_IDS);
 
             if (!sourceAgentIds.Any())
@@ -92,7 +91,7 @@ namespace SwarmAwayAllObjectsFromAgents
 
         private void SwarmElementsAwayIfEnabled(ClusterConfig config, int[] sourceAgentIds)
         {
-	        if (!IsSwarmingFlagEnabled(ParamSwarmElements))
+	        if (!_engine.IsSwarmingFlagEnabled(ParamSwarmElements))
 	        {
 				_engine.Log("Not swarming elements since option is not enabled.");
 				return;
@@ -108,7 +107,7 @@ namespace SwarmAwayAllObjectsFromAgents
 
         private void SwarmBookingsAwayIfEnabled(ClusterConfig config, int[] sourceAgentIds)
         {
-	        if (!IsSwarmingFlagEnabled(ParamSwarmBookings))
+	        if (!_engine.IsSwarmingFlagEnabled(ParamSwarmBookings))
 	        {
 		        _engine.Log("Not swarming bookings since option is not enabled.");
 		        return;
@@ -123,30 +122,5 @@ namespace SwarmAwayAllObjectsFromAgents
 	        config.RedistributeBookingsAwayFromAgents(sourceAgentIds, booking => booking.Status != ReservationStatus.Ongoing);
 	        config.SwarmBookings();
 		}
-
-        private bool IsSwarmingFlagEnabled(string param)
-        {
-	        var swarmBookingsRaw = _engine.GetScriptParam(param)?.Value;
-	        bool swarmBookingsEnabled;
-	        try
-	        {
-		        swarmBookingsEnabled = JsonConvert.DeserializeObject<string[]>(swarmBookingsRaw)
-			        .Select(bool.Parse).FirstOrDefault();
-	        }
-	        catch (JsonSerializationException)
-	        {
-		        swarmBookingsEnabled = swarmBookingsRaw.Replace(" ", string.Empty).Split(',').Select(one =>
-		        {
-			        if (!bool.TryParse(one, out var result))
-			        {
-				        throw new ArgumentException($"Cannot parse {one} to valid {nameof(Guid)}");
-			        }
-
-			        return result;
-		        }).FirstOrDefault();
-	        }
-
-	        return swarmBookingsEnabled;
-        }
 	}
 }

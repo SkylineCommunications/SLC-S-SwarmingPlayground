@@ -27,7 +27,6 @@ namespace BookingCountPerAgent
 		private readonly ConcurrentDictionary<string, GQIRow> _currentRows = new ConcurrentDictionary<string, GQIRow>();
 		private string _subscriptionSetId = $"DS-Booking-Count-Per-Agent-{Guid.NewGuid()}";
 
-
 		public GQIColumn[] GetColumns()
 		{
 			return new GQIColumn[]
@@ -50,7 +49,7 @@ namespace BookingCountPerAgent
 
 		public void OnStartUpdates(IGQIUpdater updater)
 		{
-			_logger.Information("OnStartUpdates");
+			_logger.Debug("OnStartUpdates");
 			_updater = updater;
 
 			GetAgentsInCluster();
@@ -63,7 +62,7 @@ namespace BookingCountPerAgent
 				new SubscriptionFilter(typeof(ResourceManagerEventMessage))
 			);
 			tracker.ExecuteAndWait(TimeSpan.FromMinutes(5));
-			_logger.Information("Done adding subscription");
+			_logger.Debug("Done adding subscription");
 		}
 
 		private void GetAgentsInCluster()
@@ -105,7 +104,7 @@ namespace BookingCountPerAgent
 
 		private void HandleBookingUpdate(object sender, NewMessageEventArgs args)
 		{
-			_logger.Information("Incoming update");
+			_logger.Debug("Incoming update");
 
 			if (!(args.Message is ResourceManagerEventMessage rmEvent))
 			{
@@ -167,7 +166,7 @@ namespace BookingCountPerAgent
 		{
 			try
 			{
-				_logger.Information("GetNextPage");
+				_logger.Debug("GetNextPage");
 
 				var bookingsPerHostingAgents = _rmHelper
 					.GetReservationInstances(new TRUEFilterElement<ReservationInstance>())
@@ -206,7 +205,7 @@ namespace BookingCountPerAgent
 			}
 			catch (Exception e)
 			{
-				_logger.Information($"Exception: {e}. {e.StackTrace}");
+				_logger.Error($"Exception: {e}. {e.StackTrace}");
 				return null;
 			}
 		}

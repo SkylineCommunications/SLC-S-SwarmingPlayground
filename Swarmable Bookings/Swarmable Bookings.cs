@@ -50,7 +50,7 @@ namespace SwarmableBookings
 
 		public void OnStartUpdates(IGQIUpdater updater)
 		{
-			_logger.Information("OnStartUpdates");
+			_logger.Debug("OnStartUpdates");
 
 			_updater = updater;
 			GetAgentsInCluster();
@@ -61,19 +61,19 @@ namespace SwarmableBookings
 				new SubscriptionFilter(typeof(ResourceManagerEventMessage))
 			);
 			tracker.ExecuteAndWait(TimeSpan.FromMinutes(5));
-			_logger.Information("Done adding subscription");
+			_logger.Debug("Done adding subscription");
 		}
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
-			_logger.Information("GetNextPage");
+			_logger.Debug("GetNextPage");
 			var bookings = _rmHelper.GetReservationInstances(new TRUEFilterElement<ReservationInstance>());
 			return new GQIPage(bookings.Select(SelectRow).ToArray());
 		}
 
 		public void OnStopUpdates()
 		{
-			_logger.Information("OnStopUpdates");
+			_logger.Debug("OnStopUpdates");
 			_dms.GetConnection().ClearSubscriptions(_subscriptionSetId);
 			_subscriptionSetId = null;
 
@@ -100,7 +100,7 @@ namespace SwarmableBookings
 
 		private void HandleBookingUpdate(object sender, NewMessageEventArgs args)
 		{
-			_logger.Information("Incoming updates");
+			_logger.Debug("Incoming updates");
 
 			if (!(args.Message is ResourceManagerEventMessage rmEvent))
 			{
@@ -111,7 +111,7 @@ namespace SwarmableBookings
 			{
 				if (_currentRows.ContainsKey(oneBooking.ID.ToString()))
 				{
-					_logger.Information($"Updating row for booking with ID '{oneBooking.ID}'");
+					_logger.Debug($"Updating row for booking with ID '{oneBooking.ID}'");
 					_updater.UpdateRow(SelectRow(oneBooking));
 				}
 				else
@@ -119,14 +119,14 @@ namespace SwarmableBookings
 					if (oneBooking.Start <= DateTime.Now)
 						continue;
 
-					_logger.Information($"Adding row for booking with ID '{oneBooking.ID}'");
+					_logger.Debug($"Adding row for booking with ID '{oneBooking.ID}'");
 					_updater.AddRow(SelectRow(oneBooking));
 				}
 			}
 
 			foreach (var oneBooking in rmEvent.DeletedReservationInstances)
 			{
-				_logger.Information($"Removing row for booking with ID '{oneBooking}'");
+				_logger.Debug($"Removing row for booking with ID '{oneBooking}'");
 				_updater.RemoveRow(oneBooking.ToString());
 			}
 		}

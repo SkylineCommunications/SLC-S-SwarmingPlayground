@@ -48,5 +48,37 @@
                 throw new Exception($"Failed to parse {param}: " + ex.Message);
             }
         }
-    }
+
+		/// <summary>
+		/// Parses the input parameter and checks if the swarming for an object is enabled.
+		/// </summary>
+		/// <param name="engine"></param>
+		/// <param name="param">Param with value true or false</param>
+		/// <returns></returns>
+		/// <exception cref="ArgumentException"></exception>
+		public static bool IsSwarmingFlagEnabled(this IEngine engine, string param)
+        {
+	        var swarmingFlagRaw = engine.GetScriptParam(param)?.Value;
+	        bool swarmEnabled;
+	        try
+	        {
+		        swarmEnabled = JsonConvert.DeserializeObject<string[]>(swarmingFlagRaw)
+			        .Select(bool.Parse).FirstOrDefault();
+	        }
+	        catch (JsonSerializationException)
+	        {
+		        swarmEnabled = swarmingFlagRaw.Replace(" ", string.Empty).Split(',').Select(one =>
+		        {
+			        if (!bool.TryParse(one, out var result))
+			        {
+				        throw new ArgumentException($"Cannot parse {one} to valid {nameof(Boolean)}");
+			        }
+
+			        return result;
+		        }).FirstOrDefault();
+	        }
+
+	        return swarmEnabled;
+        }
+	}
 }

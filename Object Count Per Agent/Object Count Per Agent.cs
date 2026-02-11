@@ -81,7 +81,7 @@ namespace ObjectCountPerAgent
 			);
 
 			tracker.ExecuteAndWait(TimeSpan.FromMinutes(5));
-			_logger.Information("Subscriptions added for DataMinerInfoEvent, LiteElementInfoEvent, and ResourceManagerEventMessage.");
+			_logger.Debug("Subscriptions added for DataMinerInfoEvent, LiteElementInfoEvent, and ResourceManagerEventMessage.");
 		}
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
