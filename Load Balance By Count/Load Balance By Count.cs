@@ -15,7 +15,7 @@ namespace LoadBalanceByCount
 	{
 		private IEngine _engine;
 		private GetDataMinerInfoResponseMessage[] _agentInfos;
-		private InteractiveController controller;
+		private InteractiveController _controller;
 
 		private const string ParamSwarmElements = "Swarm Elements";
 		private const string ParamSwarmBookings = "Swarm Bookings";
@@ -67,7 +67,7 @@ namespace LoadBalanceByCount
 				engine.ExitFail(
 					"Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
-			controller = new InteractiveController(engine);
+			_controller = new InteractiveController(engine);
 			var dialog = new ConfirmationDialog(engine);
 			dialog.CancelButton.Pressed += (sender, args) => engine.ExitSuccess("Canceled swarming");
 			dialog.ContinueButton.Pressed += (sender, args) =>
@@ -81,7 +81,7 @@ namespace LoadBalanceByCount
 				engine.ExitSuccess("");
 			};
 
-			controller.ShowDialog(dialog);
+			_controller.ShowDialog(dialog);
 		}
 
 		private void SwarmElementsIfEnabled(ClusterConfig config)

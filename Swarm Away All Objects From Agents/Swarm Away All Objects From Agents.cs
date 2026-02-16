@@ -14,7 +14,7 @@ namespace SwarmAwayAllObjectsFromAgents
     /// </summary>
     public class Script
     {
-	    private InteractiveController controller;
+	    private InteractiveController _controller;
 
 		private const string PARAM_SOURCE_AGENT_IDS = "Source Agent IDs";
         private const string ParamSwarmElements = "Swarm Elements";
@@ -85,7 +85,7 @@ namespace SwarmAwayAllObjectsFromAgents
                     engine.ExitFail($"Source agent '{sourceAgentId}' is not part of the cluster");
             }
 
-			controller = new InteractiveController(engine);
+			_controller = new InteractiveController(engine);
 			var dialog = new ConfirmationDialog(engine);
 			dialog.CancelButton.Pressed += (sender, args) => engine.ExitSuccess("Canceled swarming");
 			dialog.ContinueButton.Pressed += (sender, args) =>
@@ -98,7 +98,7 @@ namespace SwarmAwayAllObjectsFromAgents
 				engine.ExitSuccess("");
 			};
 			
-			controller.ShowDialog(dialog);
+			_controller.ShowDialog(dialog);
         }
 
         private void SwarmElementsAwayIfEnabled(ClusterConfig config, int[] sourceAgentIds)
