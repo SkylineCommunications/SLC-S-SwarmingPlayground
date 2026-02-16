@@ -29,7 +29,7 @@ namespace BookingCountPerAgent
 		private Timer _debounceTimer;
 		private readonly object _timerLock = new object();
 		private volatile bool _eventReceived = false;
-		private readonly TimeSpan _debounce = TimeSpan.FromSeconds(3);
+		private readonly TimeSpan _debounce = TimeSpan.FromSeconds(1);
 
 
 		public GQIColumn[] GetColumns()
@@ -115,7 +115,18 @@ namespace BookingCountPerAgent
 
 		private void HandleBookingUpdate(object sender, NewMessageEventArgs args)
 		{
-			if (!(args.Message is ResourceManagerEventMessage))
+			if (!(args.Message is ResourceManagerEventMessage msg))
+			{
+				return;
+			}
+
+			if (msg.IsFromPropertyUpdate)
+			{
+				return;
+			}
+
+			if (msg.UpdatedReservationInstances.IsNullOrEmpty() &&
+			    msg.DeletedReservationInstances.IsNullOrEmpty())
 			{
 				return;
 			}
@@ -144,7 +155,11 @@ namespace BookingCountPerAgent
 				{
 					var count = (int) _rmHelper.CountReservationInstances(baseFilter.AND(ReservationInstanceExposers.HostingAgentID.Equal(dmInfo.Key)));
 
-					var row = _currentRows[dmInfo.Key.ToString()];
+					if (!_currentRows.TryGetValue(dmInfo.Key.ToString(), out var row))
+					{
+						continue;
+					}
+
 					row.Cells[3].Value = count;
 					_updater.UpdateRow(row);
 				}
