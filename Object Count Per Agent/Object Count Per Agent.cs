@@ -14,20 +14,29 @@ namespace ObjectCountPerAgent
 {
 	/// <summary>
 	/// Shows booking & element counts per agent (swarmable + non-swarmable) and agent status.
+	/// Uses debounced re-counts for bookings.
 	/// </summary>
 	[GQIMetaData(Name = "Object Count Per Agent")]
 	public sealed class ObjectCountPerAgent : IGQIDataSource, IGQIOnInit, IGQIUpdateable
 	{
+		#region Columns
+
 		private readonly GQIColumn[] _columns = new GQIColumn[]
 		{
 			new GQIIntColumn("Agent ID"),
 			new GQIStringColumn("Agent Name"),
 			new GQIStringColumn("Agent State"),
-			new GQIIntColumn("Total Booking Count"),
+			new GQIIntColumn("Upcoming Booking Count"),
 			new GQIIntColumn("Total Element Count"),
 			new GQIIntColumn("Non-Swarmable Element Count"),
 			new GQIIntColumn("Swarmable Element Count"),
 		};
+
+		public GQIColumn[] GetColumns() => _columns;
+
+		#endregion
+
+		#region Fields
 
 		private GQIDMS _dms;
 		private IGQIUpdater _updater;
@@ -35,7 +44,7 @@ namespace ObjectCountPerAgent
 
 		private readonly Dictionary<int, RowData> _rows = new Dictionary<int, RowData>();
 		private readonly Dictionary<ElementID, LiteElementInfoEvent> _elementCache = new Dictionary<ElementID, LiteElementInfoEvent>();
-		private readonly Dictionary<Guid, ReservationInstance> _bookingCache = new Dictionary<Guid, ReservationInstance>();
+
 		private Dictionary<int, GetDataMinerInfoResponseMessage> _dmInfoPerId = new Dictionary<int, GetDataMinerInfoResponseMessage>();
 
 		private readonly ManualResetEventSlim _initialDataFetched = new ManualResetEventSlim(false);
@@ -43,15 +52,25 @@ namespace ObjectCountPerAgent
 
 		private string _subscriptionSetId;
 
-		public GQIColumn[] GetColumns() => _columns;
+		private Timer _debounceTimer;
+		private readonly object _timerLock = new object();
+		private volatile bool _rmEventReceived = false;
+		private readonly TimeSpan _debounce = TimeSpan.FromSeconds(3);
+
+		#endregion
+
+		#region Init
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			_dms = args?.DMS ?? throw new ArgumentNullException($"{nameof(OnInitInputArgs)} or {nameof(GQIDMS)} is null.");
 			_logger = args.Logger;
-
 			return null;
 		}
+
+		#endregion
+
+		#region Start Updates
 
 		public void OnStartUpdates(IGQIUpdater updater)
 		{
@@ -60,6 +79,12 @@ namespace ObjectCountPerAgent
 
 			var connection = _dms.GetConnection();
 
+			lock (_timerLock)
+			{
+				_debounceTimer = new Timer(_ => DebouncedRefresh(), null,
+					Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+			}
+
 			connection.OnNewMessage += (sender, e) =>
 			{
 				if (e == null || !e.FromSet(_subscriptionSetId)) return;
@@ -67,6 +92,16 @@ namespace ObjectCountPerAgent
 				if (!_initialDataFetched.IsSet)
 				{
 					_queuedUpdates.Enqueue(e.Message);
+					return;
+				}
+
+				if (e.Message is ResourceManagerEventMessage)
+				{
+					_rmEventReceived = true;
+					lock (_timerLock)
+					{
+						_debounceTimer?.Change(_debounce, Timeout.InfiniteTimeSpan);
+					}
 					return;
 				}
 
@@ -81,8 +116,10 @@ namespace ObjectCountPerAgent
 			);
 
 			tracker.ExecuteAndWait(TimeSpan.FromMinutes(5));
-			_logger.Debug("Subscriptions added for DataMinerInfoEvent, LiteElementInfoEvent, and ResourceManagerEventMessage.");
+			_logger.Debug("Subscriptions added (DMInfo, LiteElementInfo, RMEvent).");
 		}
+
+		#endregion
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
@@ -91,18 +128,17 @@ namespace ObjectCountPerAgent
 
 			try
 			{
+				// Fetch DM info + element info
 				var resp = _dms.SendMessages(
 					new GetInfoMessage(InfoType.DataMinerInfo),
 					new GetLiteElementInfo(includeStopped: true)
 				);
 
-				if (resp == null || resp.Length == 0)
-					throw new InvalidOperationException("Initial SLNet response is null/empty.");
-
 				var dmInfos = resp.OfType<GetDataMinerInfoResponseMessage>().ToArray();
 				var liteElms = resp.OfType<LiteElementInfoEvent>().ToArray();
 				_dmInfoPerId = dmInfos.ToDictionary(x => x.ID);
 
+				// Initialize rows for all agents
 				lock (_rows)
 				{
 					foreach (var dm in dmInfos)
@@ -113,11 +149,7 @@ namespace ObjectCountPerAgent
 							{
 								AgentID = dm.ID,
 								AgentName = dm.AgentName,
-								AgentState = dm.ConnectionState.ToString(),
-								TotalBookingCount = 0,
-								TotalElementCount = 0,
-								NonSwarmableElementCount = 0,
-								SwarmableElementCount = 0
+								AgentState = dm.ConnectionState.ToString()
 							};
 						}
 						else
@@ -128,6 +160,7 @@ namespace ObjectCountPerAgent
 					}
 				}
 
+				// Apply element counts
 				lock (_rows)
 				{
 					foreach (var elm in liteElms)
@@ -140,8 +173,12 @@ namespace ObjectCountPerAgent
 							row = new RowData
 							{
 								AgentID = elm.HostingAgentID,
-								AgentName = _dmInfoPerId.TryGetValue(elm.HostingAgentID, out var info) ? info.AgentName : $"Agent {elm.HostingAgentID}",
-								AgentState = _dmInfoPerId.TryGetValue(elm.HostingAgentID, out var info2) ? info2.ConnectionState.ToString() : "Unknown",
+								AgentName = _dmInfoPerId.TryGetValue(elm.HostingAgentID, out var dm)
+									? dm.AgentName
+									: $"Agent {elm.HostingAgentID}",
+								AgentState = _dmInfoPerId.TryGetValue(elm.HostingAgentID, out var dm2)
+									? dm2.ConnectionState.ToString()
+									: "Unknown",
 							};
 							_rows[elm.HostingAgentID] = row;
 						}
@@ -152,6 +189,7 @@ namespace ObjectCountPerAgent
 					}
 				}
 
+				// Initial booking count (debounced later)
 				var rmHelper = new ResourceManagerHelper(_dms.SendMessage);
 				var filter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
 					.AND(ReservationInstanceExposers.Status.NotEqual((int)ReservationStatus.Canceled));
@@ -159,19 +197,21 @@ namespace ObjectCountPerAgent
 
 				lock (_rows)
 				{
-					foreach (var booking in bookings)
+					foreach (var b in bookings)
 					{
-						_bookingCache[booking.ID] = booking;
-
-						if (!_rows.TryGetValue(booking.HostingAgentID, out var row))
+						if (!_rows.TryGetValue(b.HostingAgentID, out var row))
 						{
 							row = new RowData
 							{
-								AgentID = booking.HostingAgentID,
-								AgentName = _dmInfoPerId.TryGetValue(booking.HostingAgentID, out var info) ? info.AgentName : $"Agent {booking.HostingAgentID}",
-								AgentState = _dmInfoPerId.TryGetValue(booking.HostingAgentID, out var info2) ? info2.ConnectionState.ToString() : "Unknown",
+								AgentID = b.HostingAgentID,
+								AgentName = _dmInfoPerId.TryGetValue(b.HostingAgentID, out var dm)
+									? dm.AgentName
+									: $"Agent {b.HostingAgentID}",
+								AgentState = _dmInfoPerId.TryGetValue(b.HostingAgentID, out var dm2)
+									? dm2.ConnectionState.ToString()
+									: "Unknown",
 							};
-							_rows[booking.HostingAgentID] = row;
+							_rows[b.HostingAgentID] = row;
 						}
 
 						row.TotalBookingCount++;
@@ -191,7 +231,7 @@ namespace ObjectCountPerAgent
 			}
 			catch (Exception ex)
 			{
-				_logger.Error($"Error in {nameof(ObjectCountPerAgent)} GetNextPage: {ex}");
+				_logger.Error($"Error fetching initial page: {ex}");
 				throw;
 			}
 		}
@@ -200,29 +240,34 @@ namespace ObjectCountPerAgent
 		{
 			try
 			{
-				if (!string.IsNullOrEmpty(_subscriptionSetId))
-				{
-					_dms.GetConnection().ClearSubscriptions(_subscriptionSetId);
-					_subscriptionSetId = null;
-				}
+				_dms.GetConnection().ClearSubscriptions(_subscriptionSetId);
+				_subscriptionSetId = null;
 			}
 			catch (Exception ex)
 			{
-				_logger.Warning($"Failed to clear subscriptions: {ex}");
+				_logger.Warning($"Failed clearing subscriptions: {ex}");
+			}
+
+			lock (_timerLock)
+			{
+				_debounceTimer?.Dispose();
+				_debounceTimer = null;
 			}
 
 			_initialDataFetched.Dispose();
 
-			lock (_rows) _rows.Clear();
+			lock (_rows)
+			{
+				_rows.Clear();
+			}
 			_elementCache.Clear();
-			_bookingCache.Clear();
 			_dmInfoPerId.Clear();
+
 			while (_queuedUpdates.TryDequeue(out _)) { }
 		}
 
 		private void ProcessQueuedUpdates()
 		{
-			_logger.Debug($"Processing {_queuedUpdates.Count} queued updates");
 			while (_queuedUpdates.TryDequeue(out var msg))
 			{
 				OnEvent(msg);
@@ -240,16 +285,12 @@ namespace ObjectCountPerAgent
 				case LiteElementInfoEvent elmEvt:
 					OnElementInfoEvent(elmEvt);
 					break;
-
-				case ResourceManagerEventMessage rmEvt:
-					OnResourceManagerEvent(rmEvt);
-					break;
 			}
 		}
 
 		private void OnDataMinerInfoEvent(DataMinerInfoEvent dataMinerInfo)
 		{
-			var shouldPush = _initialDataFetched.IsSet;
+			if (!_initialDataFetched.IsSet) return;
 
 			lock (_rows)
 			{
@@ -263,29 +304,27 @@ namespace ObjectCountPerAgent
 					};
 					_rows[dataMinerInfo.DataMinerID] = row;
 
-					if (shouldPush)
-					{
-						_updater.AddRow(row.ToGQI());
-					}
+					_updater.AddRow(row.ToGQI());
 					return;
 				}
 
-				var newState = dataMinerInfo.Raw.ConnectionState.ToString();
 				var changed = false;
 
-				if (!string.Equals(row.AgentName, dataMinerInfo.AgentName, StringComparison.Ordinal))
+				var newState = dataMinerInfo.Raw.ConnectionState.ToString();
+
+				if (!string.Equals(row.AgentName, dataMinerInfo.AgentName))
 				{
 					row.AgentName = dataMinerInfo.AgentName;
 					changed = true;
 				}
 
-				if (!string.Equals(row.AgentState, newState, StringComparison.Ordinal))
+				if (!string.Equals(row.AgentState, newState))
 				{
 					row.AgentState = newState;
 					changed = true;
 				}
 
-				if (changed && shouldPush)
+				if (changed)
 				{
 					_updater.UpdateRow(row.ToGQI());
 				}
@@ -294,43 +333,46 @@ namespace ObjectCountPerAgent
 
 		private void OnElementInfoEvent(LiteElementInfoEvent elementInfo)
 		{
-			var shouldPush = _initialDataFetched.IsSet;
+			if (!_initialDataFetched.IsSet)
+			{
+				return;
+			}
+
 			var elementId = new ElementID(elementInfo.DataMinerID, elementInfo.ElementID);
 
 			lock (_rows)
 			{
-				if (!_rows.TryGetValue(elementInfo.HostingAgentID, out var hostRow))
+				if (!_rows.TryGetValue(elementInfo.HostingAgentID, out var row))
 				{
-					hostRow = new RowData
+					row = new RowData
 					{
 						AgentID = elementInfo.HostingAgentID,
 						AgentName = _dmInfoPerId.TryGetValue(elementInfo.HostingAgentID, out var dm) ? dm.AgentName : $"Agent {elementInfo.HostingAgentID}",
 						AgentState = _dmInfoPerId.TryGetValue(elementInfo.HostingAgentID, out var dm2) ? dm2.ConnectionState.ToString() : "Unknown",
 					};
-					_rows[elementInfo.HostingAgentID] = hostRow;
-					if (shouldPush) _updater.AddRow(hostRow.ToGQI());
+					_rows[elementInfo.HostingAgentID] = row;
+
+					_updater.AddRow(row.ToGQI());
 				}
 
+				// Handle deletions
 				if (elementInfo.IsDeleted)
 				{
 					if (_elementCache.TryGetValue(elementId, out var oldElm))
 					{
 						_elementCache.Remove(elementId);
 
-						hostRow.TotalElementCount--;
+						row.TotalElementCount--;
 						if (oldElm.IsSwarmable)
 						{
-							hostRow.SwarmableElementCount--;
+							row.SwarmableElementCount--;
 						}
 						else
 						{
-							hostRow.NonSwarmableElementCount--;
+							row.NonSwarmableElementCount--;
 						}
 
-						if (shouldPush)
-						{
-							_updater.UpdateRow(hostRow.ToGQI());
-						}
+						_updater.UpdateRow(row.ToGQI());
 					}
 					return;
 				}
@@ -339,20 +381,17 @@ namespace ObjectCountPerAgent
 				{
 					_elementCache[elementId] = elementInfo;
 
-					hostRow.TotalElementCount++;
+					row.TotalElementCount++;
 					if (elementInfo.IsSwarmable)
 					{
-						hostRow.SwarmableElementCount++;
+						row.SwarmableElementCount++;
 					}
 					else
 					{
-						hostRow.NonSwarmableElementCount++;
+						row.NonSwarmableElementCount++;
 					}
 
-					if (shouldPush)
-					{
-						_updater.UpdateRow(hostRow.ToGQI());
-					}
+					_updater.UpdateRow(row.ToGQI());
 					return;
 				}
 
@@ -360,134 +399,83 @@ namespace ObjectCountPerAgent
 				{
 					_elementCache[elementId] = elementInfo;
 
-					if (_rows.TryGetValue(existing.HostingAgentID, out var oldHostRow))
+					if (_rows.TryGetValue(existing.HostingAgentID, out var oldRow))
 					{
-						oldHostRow.TotalElementCount--;
+						oldRow.TotalElementCount--;
 						if (existing.IsSwarmable)
 						{
-							oldHostRow.SwarmableElementCount--;
+							oldRow.SwarmableElementCount--;
 						}
 						else
 						{
-							oldHostRow.NonSwarmableElementCount--;
+							oldRow.NonSwarmableElementCount--;
 						}
+
+						_updater.UpdateRow(oldRow.ToGQI());
 					}
 
-					hostRow.TotalElementCount++;
+					row.TotalElementCount++;
 					if (elementInfo.IsSwarmable)
 					{
-						hostRow.SwarmableElementCount++;
+						row.SwarmableElementCount++;
 					}
 					else
 					{
-						hostRow.NonSwarmableElementCount++;
+						row.NonSwarmableElementCount++;
 					}
 
-					if (shouldPush)
-					{
-						if (oldHostRow != null)
-						{
-							_updater.UpdateRow(oldHostRow.ToGQI());
-						}
-
-						_updater.UpdateRow(hostRow.ToGQI());
-					}
+					_updater.UpdateRow(row.ToGQI());
 				}
 			}
 		}
 
-		private void OnResourceManagerEvent(ResourceManagerEventMessage rmEvent)
+		private void DebouncedRefresh()
 		{
-			var shouldPush = _initialDataFetched.IsSet;
-
-			lock (_rows)
+			try
 			{
-				foreach (var deleted in rmEvent.DeletedReservationInstanceObjects)
+				if (!_rmEventReceived)
 				{
-					if (_bookingCache.TryGetValue(deleted.ID, out var old))
-					{
-						_bookingCache.Remove(deleted.ID);
+					return;
+				}
+				_rmEventReceived = false;
 
-						if (_rows.TryGetValue(old.HostingAgentID, out var row))
+				var rmHelper = new ResourceManagerHelper(_dms.SendMessage);
+
+				var baseFilter =
+					ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
+						.AND(ReservationInstanceExposers.Status.NotEqual((int)ReservationStatus.Canceled));
+
+				lock (_rows)
+				{
+					foreach (var dm in _dmInfoPerId)
+					{
+						var agentId = dm.Key;
+						var filter = baseFilter.AND(ReservationInstanceExposers.HostingAgentID.Equal(agentId));
+						var count = (int)rmHelper.CountReservationInstances(filter);
+
+						if (!_rows.TryGetValue(agentId, out var row))
 						{
-							row.TotalBookingCount = Math.Max(0, row.TotalBookingCount - 1);
-							if (shouldPush)
+							row = new RowData
 							{
-								_updater.UpdateRow(row.ToGQI());
-							}
+								AgentID = agentId,
+								AgentName = dm.Value.AgentName,
+								AgentState = dm.Value.ConnectionState.ToString(),
+							};
+							_rows[agentId] = row;
+							_updater.AddRow(row.ToGQI());
+						}
+
+						if (row.TotalBookingCount != count)
+						{
+							row.TotalBookingCount = count;
+							_updater.UpdateRow(row.ToGQI());
 						}
 					}
 				}
-
-				foreach (var updated in rmEvent.UpdatedReservationInstances)
-				{
-					if (!_bookingCache.TryGetValue(updated.ID, out var old))
-					{
-						_bookingCache[updated.ID] = updated;
-
-						if (!_rows.TryGetValue(updated.HostingAgentID, out var newHostRow))
-						{
-							newHostRow = new RowData
-							{
-								AgentID = updated.HostingAgentID,
-								AgentName = _dmInfoPerId.TryGetValue(updated.HostingAgentID, out var dm) ? dm.AgentName : $"Agent {updated.HostingAgentID}",
-								AgentState = _dmInfoPerId.TryGetValue(updated.HostingAgentID, out var dm2) ? dm2.ConnectionState.ToString() : "Unknown",
-							};
-							_rows[updated.HostingAgentID] = newHostRow;
-							if (shouldPush)
-							{
-								_updater.AddRow(newHostRow.ToGQI());
-							}
-						}
-
-						newHostRow.TotalBookingCount++;
-						if (shouldPush)
-						{
-							_updater.UpdateRow(newHostRow.ToGQI());
-						}
-						continue;
-					}
-
-					var oldHost = old.HostingAgentID;
-					var newHost = updated.HostingAgentID;
-
-					_bookingCache[updated.ID] = updated;
-
-					if (oldHost != newHost)
-					{
-						if (_rows.TryGetValue(oldHost, out var oldRow))
-						{
-							oldRow.TotalBookingCount = Math.Max(0, oldRow.TotalBookingCount - 1);
-							if (shouldPush)
-							{
-								_updater.UpdateRow(oldRow.ToGQI());
-							}
-						}
-
-						if (!_rows.TryGetValue(newHost, out var newRow))
-						{
-							newRow = new RowData
-							{
-								AgentID = newHost,
-								AgentName = _dmInfoPerId.TryGetValue(newHost, out var dm) ? dm.AgentName : $"Agent {newHost}",
-								AgentState = _dmInfoPerId.TryGetValue(newHost, out var dm2) ? dm2.ConnectionState.ToString() : "Unknown",
-							};
-							_rows[newHost] = newRow;
-							if (shouldPush)
-							{
-								_updater.AddRow(newRow.ToGQI());
-							}
-						}
-
-						_rows[newHost].TotalBookingCount++;
-						if (shouldPush)
-						{
-							_updater.UpdateRow(_rows[newHost].ToGQI());
-						}
-					}
-
-					// If host didn't change, we ignore (no count change).
-				}
+			}
+			catch (Exception ex)
+			{
+				_logger.Error($"DebouncedRefresh failed: {ex}");
 			}
 		}
 
@@ -507,13 +495,13 @@ namespace ObjectCountPerAgent
 					AgentID.ToString(),
 					new[]
 					{
-						new GQICell { Value = AgentID, DisplayValue = AgentID.ToString() },
-						new GQICell { Value = AgentName, DisplayValue = AgentName },
-						new GQICell { Value = AgentState, DisplayValue = AgentState },
-						new GQICell { Value = TotalBookingCount, DisplayValue = TotalBookingCount.ToString() },
-						new GQICell { Value = TotalElementCount, DisplayValue = TotalElementCount.ToString() },
-						new GQICell { Value = NonSwarmableElementCount, DisplayValue = NonSwarmableElementCount.ToString() },
-						new GQICell { Value = SwarmableElementCount, DisplayValue = SwarmableElementCount.ToString() },
+						new GQICell { Value = AgentID },
+						new GQICell { Value = AgentName },
+						new GQICell { Value = AgentState },
+						new GQICell { Value = TotalBookingCount },
+						new GQICell { Value = TotalElementCount },
+						new GQICell { Value = NonSwarmableElementCount },
+						new GQICell { Value = SwarmableElementCount },
 					}
 				);
 			}

@@ -6,6 +6,7 @@
 	<Author>RobbeDG</Author>
 	<CheckSets>FALSE</CheckSets>
 	<Folder>Swarming Playground</Folder>
+	<Interactivity>Always</Interactivity>
 
 	<Protocols>
 	</Protocols>

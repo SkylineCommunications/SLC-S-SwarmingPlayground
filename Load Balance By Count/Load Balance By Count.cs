@@ -1,10 +1,9 @@
 using System;
-using System.Linq;
-using Newtonsoft.Json;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.Messages;
 using Skyline.DataMiner.Net.Messages.SLDataGateway;
 using Skyline.DataMiner.Net.ResourceManager.Objects;
+using Skyline.DataMiner.Utils.InteractiveAutomationScript;
 using Swarming_Playground_Shared;
 
 namespace LoadBalanceByCount
@@ -16,6 +15,7 @@ namespace LoadBalanceByCount
 	{
 		private IEngine _engine;
 		private GetDataMinerInfoResponseMessage[] _agentInfos;
+		private InteractiveController controller;
 
 		private const string ParamSwarmElements = "Swarm Elements";
 		private const string ParamSwarmBookings = "Swarm Bookings";
@@ -67,11 +67,21 @@ namespace LoadBalanceByCount
 				engine.ExitFail(
 					"Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
-			var config = new ClusterConfig(engine, _agentInfos);
+			controller = new InteractiveController(engine);
+			var dialog = new ConfirmationDialog(engine);
+			dialog.CancelButton.Pressed += (sender, args) => engine.ExitSuccess("Canceled swarming");
+			dialog.ContinueButton.Pressed += (sender, args) =>
+			{
+				var config = new ClusterConfig(engine, _agentInfos);
 
-			SwarmElementsIfEnabled(config);
+				SwarmElementsIfEnabled(config);
 
-			SwarmBookingsIfEnabled(config);
+				SwarmBookingsIfEnabled(config);
+
+				engine.ExitSuccess("");
+			};
+
+			controller.ShowDialog(dialog);
 		}
 
 		private void SwarmElementsIfEnabled(ClusterConfig config)
@@ -104,6 +114,24 @@ namespace LoadBalanceByCount
 			config.InitializeAgentToBookings(bookings);
 			config.RedistributeBookingsByCount(booking => booking.Status == ReservationStatus.Ongoing, booking => booking.Status != ReservationStatus.Ongoing);
 			config.SwarmBookings();
+		}
+	}
+
+	public class ConfirmationDialog : Dialog
+	{
+		private Label Label;
+		public Button CancelButton { get; private set; }
+		public Button ContinueButton { get; private set; }
+
+		public ConfirmationDialog(IEngine engine) : base(engine)
+		{
+			Title = "Swarming Confirmation";
+			Label = new Label("You are about to swarm (a lot of) elements/bookings, which could take a while. Are you sure you want to continue?");
+			ContinueButton = new Button("Continue");
+			CancelButton = new Button("Cancel");
+			AddWidget(Label, 0, 0, 1, 2);
+			AddWidget(ContinueButton, 1, 0);
+			AddWidget(CancelButton, 1, 1);
 		}
 	}
 }

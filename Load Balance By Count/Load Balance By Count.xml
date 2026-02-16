@@ -6,7 +6,7 @@
 	<Author>PCU</Author>
 	<CheckSets>FALSE</CheckSets>
 	<Folder>Swarming Playground</Folder>
-	<Interactivity>Auto</Interactivity>
+	<Interactivity>Always</Interactivity>
 
 	<Protocols>
 	</Protocols>

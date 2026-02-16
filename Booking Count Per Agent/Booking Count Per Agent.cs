@@ -115,9 +115,6 @@ namespace BookingCountPerAgent
 
 		private void HandleBookingUpdate(object sender, NewMessageEventArgs args)
 		{
-			// TODO remove this
-			_logger.Information($"Message received");
-
 			if (!(args.Message is ResourceManagerEventMessage))
 			{
 				return;

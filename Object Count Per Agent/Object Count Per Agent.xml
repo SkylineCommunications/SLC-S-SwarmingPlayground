@@ -3,9 +3,9 @@
 	<Name>Object Count Per Agent</Name>
 	<Description></Description>
 	<Type>Automation</Type>
-	<Author></Author>
+	<Author>PCU</Author>
 	<CheckSets>FALSE</CheckSets>
-	<Folder></Folder>
+	<Folder>Swarming Playground</Folder>
 
 	<Protocols>
 	</Protocols>
