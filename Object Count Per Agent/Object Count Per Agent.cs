@@ -17,9 +17,8 @@ namespace ObjectCountPerAgent
 	/// Uses debounced re-counts for bookings.
 	/// </summary>
 	[GQIMetaData(Name = "Object Count Per Agent")]
-	public sealed class ObjectCountPerAgent : IGQIDataSource, IGQIOnInit, IGQIUpdateable
+	public sealed class ObjectCountPerAgent : IGQIDataSource, IGQIOnInit, IGQIUpdateable, IGQIInputArguments
 	{
-		#region Columns
 
 		private readonly GQIColumn[] _columns = new GQIColumn[]
 		{
@@ -33,10 +32,6 @@ namespace ObjectCountPerAgent
 		};
 
 		public GQIColumn[] GetColumns() => _columns;
-
-		#endregion
-
-		#region Fields
 
 		private GQIDMS _dms;
 		private IGQIUpdater _updater;
@@ -57,9 +52,29 @@ namespace ObjectCountPerAgent
 		private volatile bool _rmEventReceived = false;
 		private readonly TimeSpan _debounce = TimeSpan.FromSeconds(3);
 
-		#endregion
+		private GQIArgument<bool> _includeElementsArg;
+		private GQIArgument<bool> _includeBookingsArg;
+		private bool _includeElements;
+		private bool _includeBookings;
 
-		#region Init
+		public ObjectCountPerAgent()
+		{
+			_includeElementsArg = new GQIBooleanArgument("Include elements");
+			_includeBookingsArg = new GQIBooleanArgument("Include bookings");
+		}
+
+		public GQIArgument[] GetInputArguments()
+		{
+			return new GQIArgument[] { _includeElementsArg, _includeBookingsArg };
+		}
+
+		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
+		{
+			_includeElements = args.GetArgumentValue(_includeElementsArg);
+			_includeBookings = args.GetArgumentValue(_includeBookingsArg);
+
+			return null;
+		}
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
@@ -67,10 +82,6 @@ namespace ObjectCountPerAgent
 			_logger = args.Logger;
 			return null;
 		}
-
-		#endregion
-
-		#region Start Updates
 
 		public void OnStartUpdates(IGQIUpdater updater)
 		{
@@ -95,31 +106,25 @@ namespace ObjectCountPerAgent
 					return;
 				}
 
-				if (e.Message is ResourceManagerEventMessage)
-				{
-					_rmEventReceived = true;
-					lock (_timerLock)
-					{
-						_debounceTimer?.Change(_debounce, Timeout.InfiniteTimeSpan);
-					}
-					return;
-				}
-
 				OnEvent(e.Message);
 			};
 
-			var tracker = connection.TrackAddSubscription(
-				_subscriptionSetId,
-				new SubscriptionFilter(typeof(DataMinerInfoEvent), SubscriptionFilterOptions.SkipInitialEvents),
-				new SubscriptionFilter(typeof(LiteElementInfoEvent), SubscriptionFilterOptions.SkipInitialEvents),
-				new SubscriptionFilter(typeof(ResourceManagerEventMessage))
-			);
+			var subscriptionFilters = new List<SubscriptionFilter>();
+			if (_includeBookings)
+			{
+				subscriptionFilters.Add(new SubscriptionFilter(typeof(ResourceManagerEventMessage)));
+			}
 
-			tracker.ExecuteAndWait(TimeSpan.FromMinutes(5));
+			if (_includeElements)
+			{
+				subscriptionFilters.Add(new SubscriptionFilter(typeof(DataMinerInfoEvent), SubscriptionFilterOptions.SkipInitialEvents));
+				subscriptionFilters.Add(new SubscriptionFilter(typeof(LiteElementInfoEvent), SubscriptionFilterOptions.SkipInitialEvents));
+			}
+
+			_dms.GetConnection().AddSubscription(_subscriptionSetId, subscriptionFilters.ToArray());
+
 			_logger.Debug("Subscriptions added (DMInfo, LiteElementInfo, RMEvent).");
 		}
-
-		#endregion
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
@@ -128,14 +133,8 @@ namespace ObjectCountPerAgent
 
 			try
 			{
-				// Fetch DM info + element info
-				var resp = _dms.SendMessages(
-					new GetInfoMessage(InfoType.DataMinerInfo),
-					new GetLiteElementInfo(includeStopped: true)
-				);
-
-				var dmInfos = resp.OfType<GetDataMinerInfoResponseMessage>().ToArray();
-				var liteElms = resp.OfType<LiteElementInfoEvent>().ToArray();
+				var dmInfos = _dms.SendMessages(new GetInfoMessage(InfoType.DataMinerInfo))
+					.OfType<GetDataMinerInfoResponseMessage>().ToArray();
 				_dmInfoPerId = dmInfos.ToDictionary(x => x.ID);
 
 				// Initialize rows for all agents
@@ -160,61 +159,27 @@ namespace ObjectCountPerAgent
 					}
 				}
 
-				// Apply element counts
-				lock (_rows)
+				if (_includeElements)
 				{
-					foreach (var elm in liteElms)
+					var liteElms = _dms.SendMessages(new GetLiteElementInfo(includeStopped: true))
+						.OfType<LiteElementInfoEvent>().ToArray();
+
+					lock (_rows)
 					{
-						var elementId = new ElementID(elm.DataMinerID, elm.ElementID);
-						_elementCache[elementId] = elm;
-
-						if (!_rows.TryGetValue(elm.HostingAgentID, out var row))
-						{
-							row = new RowData
-							{
-								AgentID = elm.HostingAgentID,
-								AgentName = _dmInfoPerId.TryGetValue(elm.HostingAgentID, out var dm)
-									? dm.AgentName
-									: $"Agent {elm.HostingAgentID}",
-								AgentState = _dmInfoPerId.TryGetValue(elm.HostingAgentID, out var dm2)
-									? dm2.ConnectionState.ToString()
-									: "Unknown",
-							};
-							_rows[elm.HostingAgentID] = row;
-						}
-
-						row.TotalElementCount++;
-						if (elm.IsSwarmable) row.SwarmableElementCount++;
-						else row.NonSwarmableElementCount++;
+						ApplyElements(liteElms);
 					}
 				}
 
-				// Initial booking count (debounced later)
-				var rmHelper = new ResourceManagerHelper(_dms.SendMessage);
-				var filter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
-					.AND(ReservationInstanceExposers.Status.NotEqual((int)ReservationStatus.Canceled));
-				var bookings = rmHelper.GetReservationInstances(filter);
-
-				lock (_rows)
+				if (_includeBookings)
 				{
-					foreach (var b in bookings)
-					{
-						if (!_rows.TryGetValue(b.HostingAgentID, out var row))
-						{
-							row = new RowData
-							{
-								AgentID = b.HostingAgentID,
-								AgentName = _dmInfoPerId.TryGetValue(b.HostingAgentID, out var dm)
-									? dm.AgentName
-									: $"Agent {b.HostingAgentID}",
-								AgentState = _dmInfoPerId.TryGetValue(b.HostingAgentID, out var dm2)
-									? dm2.ConnectionState.ToString()
-									: "Unknown",
-							};
-							_rows[b.HostingAgentID] = row;
-						}
+					var rmHelper = new ResourceManagerHelper(_dms.SendMessage);
+					var filter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
+						.AND(ReservationInstanceExposers.Status.NotEqual((int)ReservationStatus.Canceled));
+					var bookings = rmHelper.GetReservationInstances(filter);
 
-						row.TotalBookingCount++;
+					lock (_rows)
+					{
+						ApplyBookings(bookings);
 					}
 				}
 
@@ -266,6 +231,60 @@ namespace ObjectCountPerAgent
 			while (_queuedUpdates.TryDequeue(out _)) { }
 		}
 
+		private RowData GetOrCreateRow(int agentId)
+		{
+			if (_rows.TryGetValue(agentId, out var row))
+				return row;
+
+			return CreateRow(agentId);
+		}
+
+		private RowData CreateRow(int agentId)
+		{
+			RowData row;
+			_dmInfoPerId.TryGetValue(agentId, out var dm);
+
+			row = new RowData
+			{
+				AgentID = agentId,
+				AgentName = dm?.AgentName ?? $"Agent {agentId}",
+				AgentState = dm?.ConnectionState.ToString() ?? "Unknown",
+			};
+
+			_rows[agentId] = row;
+			return row;
+		}
+
+		private void ApplyElements(LiteElementInfoEvent[] liteElms)
+		{
+			foreach (var elm in liteElms)
+			{
+				var elementId = new ElementID(elm.DataMinerID, elm.ElementID);
+				_elementCache[elementId] = elm;
+
+				var row = GetOrCreateRow(elm.HostingAgentID);
+
+				row.TotalElementCount++;
+				if (elm.IsSwarmable)
+				{
+					row.SwarmableElementCount++;
+				}
+				else
+				{
+					row.NonSwarmableElementCount++;
+				}
+			}
+		}
+
+		private void ApplyBookings(ReservationInstance[] bookings)
+		{
+			foreach (var b in bookings)
+			{
+				var row = GetOrCreateRow(b.HostingAgentID);
+				row.TotalBookingCount++;
+			}
+		}
+
 		private void ProcessQueuedUpdates()
 		{
 			while (_queuedUpdates.TryDequeue(out var msg))
@@ -278,6 +297,9 @@ namespace ObjectCountPerAgent
 		{
 			switch (msg)
 			{
+				case ResourceManagerEventMessage rmEvt:
+					OnResourceManagerEvent();
+					break;
 				case DataMinerInfoEvent dmEvt:
 					OnDataMinerInfoEvent(dmEvt);
 					break;
@@ -289,7 +311,7 @@ namespace ObjectCountPerAgent
 		}
 
 		private void OnDataMinerInfoEvent(DataMinerInfoEvent dataMinerInfo)
-		{
+		{ 
 			if (!_initialDataFetched.IsSet) return;
 
 			lock (_rows)
@@ -344,14 +366,7 @@ namespace ObjectCountPerAgent
 			{
 				if (!_rows.TryGetValue(elementInfo.HostingAgentID, out var row))
 				{
-					row = new RowData
-					{
-						AgentID = elementInfo.HostingAgentID,
-						AgentName = _dmInfoPerId.TryGetValue(elementInfo.HostingAgentID, out var dm) ? dm.AgentName : $"Agent {elementInfo.HostingAgentID}",
-						AgentState = _dmInfoPerId.TryGetValue(elementInfo.HostingAgentID, out var dm2) ? dm2.ConnectionState.ToString() : "Unknown",
-					};
-					_rows[elementInfo.HostingAgentID] = row;
-
+					row = CreateRow(elementInfo.HostingAgentID);
 					_updater.AddRow(row.ToGQI());
 				}
 
@@ -426,6 +441,15 @@ namespace ObjectCountPerAgent
 
 					_updater.UpdateRow(row.ToGQI());
 				}
+			}
+		}
+
+		private void OnResourceManagerEvent()
+		{
+			_rmEventReceived = true;
+			lock (_timerLock)
+			{
+				_debounceTimer?.Change(_debounce, Timeout.InfiniteTimeSpan);
 			}
 		}
 

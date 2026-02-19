@@ -94,7 +94,7 @@ namespace LoadBalanceByCount
 
 			var elementInfos = _engine.GetElements();
 			config.InitializeAgentToElements(elementInfos);
-			config.RedistributeElementsByCount(element => !element.IsSwarmable, element => element.IsSwarmable);
+			config.RedistributeElementsByCount(element => element.IsSwarmable);
 			config.SwarmElements();
 		}
 
@@ -112,7 +112,7 @@ namespace LoadBalanceByCount
 			var bookings = rmHelper.GetReservationInstances(filter);
 
 			config.InitializeAgentToBookings(bookings);
-			config.RedistributeBookingsByCount(booking => booking.Status == ReservationStatus.Ongoing, booking => booking.Status != ReservationStatus.Ongoing);
+			config.RedistributeBookingsByCount(booking => booking.Status != ReservationStatus.Ongoing);
 			config.SwarmBookings();
 		}
 	}

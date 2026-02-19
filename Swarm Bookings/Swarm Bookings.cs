@@ -59,10 +59,6 @@ namespace SwarmBookings
 			_engine = engine;
 			var agents = engine.GetAgents();
 
-			if (!Check.IfSwarmingIsEnabled(agents))
-				engine.ExitFail(
-					"Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
-
 			var bookingIds = GetBookingIds();
 			var targetAgentId = GetTargetAgentId(engine);
 

@@ -3,7 +3,7 @@
 	<Name>Object Count Per Agent</Name>
 	<Description></Description>
 	<Type>Automation</Type>
-	<Author>PCU</Author>
+	<Author>PieterCU</Author>
 	<CheckSets>FALSE</CheckSets>
 	<Folder>Swarming Playground</Folder>
 

@@ -3,7 +3,7 @@
 	<Name>Load Balance By Count</Name>
 	<Description></Description>
 	<Type>Automation</Type>
-	<Author>PCU</Author>
+	<Author>PieterCU</Author>
 	<CheckSets>FALSE</CheckSets>
 	<Folder>Swarming Playground</Folder>
 	<Interactivity>Always</Interactivity>

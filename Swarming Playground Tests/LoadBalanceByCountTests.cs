@@ -102,8 +102,8 @@ namespace LoadBalanceTests
             // Arrange
             var clusterConfig = new ClusterConfig(Mock.Of<IEngine>(), agentInfos, elementInfos);
 
-            // Act
-            clusterConfig.RedistributeByCount();
+			// Act
+			clusterConfig.RedistributeElementsByCount(element => element.IsSwarmable);
             var output = clusterConfig.CurrentConfig;
 
             // Assert

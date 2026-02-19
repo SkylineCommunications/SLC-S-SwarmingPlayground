@@ -68,11 +68,9 @@ namespace BookingCountPerAgent
 					Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 			}
 
-			var tracker = _dms.GetConnection().TrackAddSubscription(
-				_subscriptionSetId,
-				new SubscriptionFilter(typeof(ResourceManagerEventMessage))
-			);
-			tracker.ExecuteAndWait(TimeSpan.FromMinutes(5));
+			_dms.GetConnection().AddSubscription(_subscriptionSetId,
+				new SubscriptionFilter(typeof(ResourceManagerEventMessage)));
+			
 			_logger.Debug("Done adding subscription");
 		}
 
@@ -207,7 +205,7 @@ namespace BookingCountPerAgent
 			}
 			catch (Exception e)
 			{
-				_logger.Error($"Exception: {e}. {e.StackTrace}");
+				_logger.Error($"Exception: {e}");
 				return null;
 			}
 		}

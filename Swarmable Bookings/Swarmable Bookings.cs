@@ -56,11 +56,10 @@ namespace SwarmableBookings
 			GetAgentsInCluster();
 			_dms.GetConnection().OnNewMessage += HandleBookingUpdate;
 
-			var tracker = _dms.GetConnection().TrackAddSubscription(
-				_subscriptionSetId,
-				new SubscriptionFilter(typeof(ResourceManagerEventMessage))
-			);
-			tracker.ExecuteAndWait(TimeSpan.FromMinutes(5));
+
+			_dms.GetConnection().AddSubscription(_subscriptionSetId,
+				new SubscriptionFilter(typeof(ResourceManagerEventMessage)));
+
 			_logger.Debug("Done adding subscription");
 		}
 
@@ -70,7 +69,7 @@ namespace SwarmableBookings
 			var filter = ReservationInstanceExposers.End.GreaterThan(DateTime.UtcNow)
 				.AND(ReservationInstanceExposers.Status.NotEqual((int) ReservationStatus.Canceled));
 			var bookings = _rmHelper.GetReservationInstances(filter);
-			return new GQIPage(bookings.Select(SelectRow).ToArray());
+			return new GQIPage(bookings.Select(GetRow).ToArray());
 		}
 
 		public void OnStopUpdates()
@@ -114,7 +113,7 @@ namespace SwarmableBookings
 				if (_currentRows.ContainsKey(oneBooking.ID.ToString()))
 				{
 					_logger.Debug($"Updating row for booking with ID '{oneBooking.ID}'");
-					_updater.UpdateRow(SelectRow(oneBooking));
+					_updater.UpdateRow(GetRow(oneBooking));
 				}
 				else
 				{
@@ -122,7 +121,7 @@ namespace SwarmableBookings
 						continue;
 
 					_logger.Debug($"Adding row for booking with ID '{oneBooking.ID}'");
-					_updater.AddRow(SelectRow(oneBooking));
+					_updater.AddRow(GetRow(oneBooking));
 				}
 			}
 
@@ -133,7 +132,7 @@ namespace SwarmableBookings
 			}
 		}
 
-		private GQIRow SelectRow(ReservationInstance booking)
+		private GQIRow GetRow(ReservationInstance booking)
 		{
 			if (!_dmInfoPerId.TryGetValue(booking.HostingAgentID, out var dmaInfo))
 			{
