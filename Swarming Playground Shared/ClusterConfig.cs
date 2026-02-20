@@ -23,15 +23,24 @@
 
 
 		/// <summary>
-		/// Gets the config.
+		/// Gets the config for elements.
 		/// used in unit tests to verify internal state.
 		/// </summary>
-		internal IReadOnlyDictionary<GetDataMinerInfoResponseMessage, List<ElementInfoEventMessage>> CurrentConfig
+		internal IReadOnlyDictionary<GetDataMinerInfoResponseMessage, List<ElementInfoEventMessage>> CurrentConfigElements
         {
             get => _agentToElements;
         }
 
-        public ClusterConfig(IEngine engine, GetDataMinerInfoResponseMessage[] agentInfos)
+        /// <summary>
+        /// Gets the config.
+        /// used in unit tests to verify internal state.
+        /// </summary>
+        internal IReadOnlyDictionary<GetDataMinerInfoResponseMessage, List<ReservationInstance>> CurrentConfigBookings
+        {
+	        get => _agentToBookings;
+        }
+
+		public ClusterConfig(IEngine engine, GetDataMinerInfoResponseMessage[] agentInfos)
         {
 	        _engine = engine;
 	        _agentInfos = agentInfos;
@@ -150,7 +159,7 @@
         /// </summary>
         public void SwarmBookings()
         {
-	        SwarmItems(_agentToBookings, (booking, agentId) => booking.HostingAgentID != agentId,
+	        SwarmItems(_agentToBookings, (booking, agentId) => booking.HostingAgentID == agentId,
 		        booking => booking.Name, booking => booking.ID,
 		        (helper, ids, targetAgentId) => helper.SwarmBookings(ids.Cast<Guid>().ToArray()).ToAgent(targetAgentId), "booking");
         }

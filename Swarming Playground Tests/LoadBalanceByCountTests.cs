@@ -104,7 +104,7 @@ namespace LoadBalanceTests
 
 			// Act
 			clusterConfig.RedistributeElementsByCount(element => element.IsSwarmable);
-            var output = clusterConfig.CurrentConfig;
+            var output = clusterConfig.CurrentConfigElements;
 
             // Assert
             var counts = output.Select(bucket => bucket.Value.Count).ToArray();
