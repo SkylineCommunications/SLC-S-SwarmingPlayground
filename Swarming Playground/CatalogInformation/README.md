@@ -10,20 +10,20 @@ Swarming allows you to move functionalities within your DMS from one agent to an
 
 ## Key Features
 
-- Ad hoc Swarming
-- Recover from critical agent failures
+- Ad hoc swarming
+- Recovering from critical agent failures
 - Load balancing
 - Swarming all functionality away from an agent to prepare for offline maintenance
 
 ## Use Cases
 
-### Move functionality to a new host in the DMS
+### Moving functionality to a new host in the DMS
 
 Move functionalities within your DMS from one agent to another.
 
-![Ad hoc Swarming](./Images/AdHoc.gif)
+![Ad hoc swarming](./Images/AdHoc.gif)
 
-### Add a new agent to the DMS and rebalance the cluster
+### Adding a new agent to the DMS and rebalancing the cluster
 
 Swarm functionality around so that every agent more or less hosts the same number of objects.
 
@@ -31,16 +31,16 @@ This can be used to easily extend your system with an extra node, and move funct
 
 ![Load balancing](./Images/LoadBalance.gif)
 
-### Swarm away from an agent
+### Swarming away from an agent
 
-Apply maintenance (e.g. Windows updates) on a live cluster, agent by agent, by temporarily moving functionalities away to other agents in the cluster.
+Apply maintenance (for example Windows updates) on a live cluster, agent by agent, by temporarily moving functionalities away to other agents in the cluster.
 
 > [!NOTE]
 > This does not work for DataMiner upgrades.
 
 ![Load Balance](./Images/SwarmAwayFromAgent.gif)
 
-### Recover from a failing agent
+### Recovering from a failing agent
 
 Swarming makes it possible to recover functionalities from failing nodes by moving activities hosted on such a node to the remaining nodes.
 
@@ -50,7 +50,8 @@ Swarming makes it possible to recover functionalities from failing nodes by movi
 
 To deploy this sample application from the Catalog, you will need the following:
 
-- DataMiner version 10.5.1+/10.6.0+
-- A DataMiner System connected to dataminer.services.
+- DataMiner version 10.5.1/10.6.0 or newer
+- A DataMiner System connected to dataminer.services
 
-To use this application you will need to [enable swarming](https://aka.dataminer.services/enable-swarming), which comes with its own set of prerequisites.
+> [!NOTE]
+> To use this application you will need to [enable the swarming feature](https://aka.dataminer.services/enable-swarming), which comes with its own set of prerequisites.
