@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<DMSScript options="272" xmlns="http://www.skyline.be/automation">
+	<Name>Load Balance By Count</Name>
+	<Description></Description>
+	<Type>Automation</Type>
+	<Author>PieterCU</Author>
+	<CheckSets>FALSE</CheckSets>
+	<Folder>Swarming Playground</Folder>
+	<Interactivity>Always</Interactivity>
+
+	<Protocols>
+	</Protocols>
+
+	<Memory>
+	</Memory>
+
+	<Parameters>
+		<ScriptParameter id="1" type="string" values="">
+			<Description>Swarm Elements</Description>
+		</ScriptParameter>
+		<ScriptParameter id="2" type="string" values="">
+			<Description>Swarm Bookings</Description>
+		</ScriptParameter>
+	</Parameters>
+
+	<Script>
+		<Exe id="201" type="csharp">
+			<Value><![CDATA[[Project:Load Balance By Count]]]></Value>
+			<!--<Param type="debug">true</Param>-->
+			<Message></Message>
+		</Exe>
+	</Script>
+</DMSScript>
