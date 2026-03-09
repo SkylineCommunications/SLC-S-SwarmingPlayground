@@ -50,7 +50,7 @@ namespace ObjectCountPerAgent
 		private Timer _debounceTimer;
 		private readonly object _timerLock = new object();
 		private volatile bool _rmEventReceived = false;
-		private readonly TimeSpan _debounce = TimeSpan.FromSeconds(3);
+		private readonly TimeSpan _debounce = TimeSpan.FromSeconds(1);
 
 		private GQIArgument<bool> _includeElementsArg;
 		private GQIArgument<bool> _includeBookingsArg;
@@ -142,19 +142,21 @@ namespace ObjectCountPerAgent
 				{
 					foreach (var dm in dmInfos)
 					{
-						if (!_rows.ContainsKey(dm.ID))
+						if (!_rows.TryGetValue(dm.ID, out var row))
 						{
-							_rows[dm.ID] = new RowData
+							row = new RowData
 							{
 								AgentID = dm.ID,
 								AgentName = dm.AgentName,
 								AgentState = dm.ConnectionState.ToString()
 							};
+
+							_rows[dm.ID] = row;
 						}
 						else
 						{
-							_rows[dm.ID].AgentName = dm.AgentName;
-							_rows[dm.ID].AgentState = dm.ConnectionState.ToString();
+							row.AgentName = dm.AgentName;
+							row.AgentState = dm.ConnectionState.ToString();
 						}
 					}
 				}
@@ -241,10 +243,9 @@ namespace ObjectCountPerAgent
 
 		private RowData CreateRow(int agentId)
 		{
-			RowData row;
 			_dmInfoPerId.TryGetValue(agentId, out var dm);
 
-			row = new RowData
+			var row = new RowData
 			{
 				AgentID = agentId,
 				AgentName = dm?.AgentName ?? $"Agent {agentId}",

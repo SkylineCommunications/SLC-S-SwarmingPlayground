@@ -1,5 +1,6 @@
 ﻿namespace Swarming_Playground_Shared
 {
+    using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
@@ -8,10 +9,9 @@
     using Skyline.DataMiner.Automation;
     using Skyline.DataMiner.Net;
     using Skyline.DataMiner.Net.Messages;
+    using Skyline.DataMiner.Net.ResourceManager.Objects;
     using Skyline.DataMiner.Net.Swarming;
     using Skyline.DataMiner.Net.Swarming.Helper;
-    using System;
-    using Skyline.DataMiner.Net.ResourceManager.Objects;
     using Skyline.DataMiner.Net.Swarming.Helper.Interfaces;
 
 	public class ClusterConfig
@@ -196,7 +196,7 @@
 	        if (failures.Any())
 	        {
 		        var summary = new StringBuilder();
-		        summary.AppendLine($"Swarming failed for {failures.Count} element(s):");
+		        summary.AppendLine($"Swarming failed for {failures.Count} {itemType}(s):");
 		        foreach (var failure in failures)
 			        summary.AppendLine($"\t- {failure.DmaObjectRef}: {failure.Message}");
 		        _engine.ExitFail(summary.ToString());
