@@ -50,8 +50,8 @@ Swarming makes it possible to recover functionalities from failing nodes by movi
 
 To deploy this sample application from the Catalog, you will need the following:
 
-- DataMiner version 10.5.1/10.6.0 or newer
-- A DataMiner System connected to dataminer.services
+- DataMiner version 10.5.3+/10.6.0+
+- A DataMiner System connected to dataminer.services.
 
 > [!NOTE]
 > To use this application you will need to [enable the swarming feature](https://aka.dataminer.services/enable-swarming), which comes with its own set of prerequisites.
