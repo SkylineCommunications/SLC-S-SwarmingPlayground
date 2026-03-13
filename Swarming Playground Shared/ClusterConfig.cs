@@ -151,7 +151,7 @@
 		{
 			SwarmItems(_agentToElements, (element, agentId) => element.HostingAgentID == agentId,
 				element => element.Name, element => new ElementID(element.DataMinerID, element.ElementID),
-				(helper, ids, targetAgentId) => helper.SwarmElements(ids.Cast<ElementID>().ToArray()).ToAgent(targetAgentId), "element");
+				(helper, ids, targetAgentId) => helper.SwarmElements(ids.ToArray()).ToAgent(targetAgentId), "element");
         }
 
         /// <summary>
@@ -161,12 +161,12 @@
         {
 	        SwarmItems(_agentToBookings, (booking, agentId) => booking.HostingAgentID == agentId,
 		        booking => booking.Name, booking => booking.ID,
-		        (helper, ids, targetAgentId) => helper.SwarmBookings(ids.Cast<Guid>().ToArray()).ToAgent(targetAgentId), "booking");
+		        (helper, ids, targetAgentId) => helper.SwarmBookings(ids.ToArray()).ToAgent(targetAgentId), "booking");
         }
 
-        private void SwarmItems<T>(Dictionary<GetDataMinerInfoResponseMessage, List<T>> agentToItems,
-	        Func<T, int, bool> isHostedOnAgent, Func<T, object> getDisplayName, Func<T, object> toSwarmId,
-	        Func<ISwarmingHelper, object[], int,SwarmingResult[]> swarmAction, string itemType)
+        private void SwarmItems<T, TID>(Dictionary<GetDataMinerInfoResponseMessage, List<T>> agentToItems,
+	        Func<T, int, bool> isHostedOnAgent, Func<T, string> getDisplayName, Func<T, TID> toSwarmId,
+	        Func<ISwarmingHelper, TID[], int,SwarmingResult[]> swarmAction, string itemType)
 		{
 	        var failures = new ConcurrentBag<SwarmingResult>();
 
