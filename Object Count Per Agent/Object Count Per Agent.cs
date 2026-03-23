@@ -1,19 +1,19 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using Skyline.DataMiner.Analytics.GenericInterface;
-using Skyline.DataMiner.Net;
-using Skyline.DataMiner.Net.Messages;
-using Skyline.DataMiner.Net.Messages.SLDataGateway;
-using Skyline.DataMiner.Net.ResourceManager.Objects;
-
 namespace ObjectCountPerAgent
 {
+	using System;
+	using System.Collections.Concurrent;
+	using System.Collections.Generic;
+	using System.Diagnostics;
+	using System.Linq;
+	using System.Threading;
+	using Skyline.DataMiner.Analytics.GenericInterface;
+	using Skyline.DataMiner.Net;
+	using Skyline.DataMiner.Net.Messages;
+	using Skyline.DataMiner.Net.Messages.SLDataGateway;
+	using Skyline.DataMiner.Net.ResourceManager.Objects;
+
 	/// <summary>
-	/// Shows booking & element counts per agent (swarmable + non-swarmable) and agent status.
+	/// Shows booking and element counts per agent (swarmable + non-swarmable) and agent status.
 	/// Uses debounced re-counts for bookings.
 	/// </summary>
 	[GQIMetaData(Name = "Object Count Per Agent")]
@@ -52,16 +52,10 @@ namespace ObjectCountPerAgent
 		private volatile bool _rmEventReceived = false;
 		private readonly TimeSpan _debounce = TimeSpan.FromSeconds(1);
 
-		private GQIArgument<bool> _includeElementsArg;
-		private GQIArgument<bool> _includeBookingsArg;
+		private readonly GQIArgument<bool> _includeElementsArg = new GQIBooleanArgument("Include elements");
+		private readonly GQIArgument<bool> _includeBookingsArg = new GQIBooleanArgument("Include bookings");
 		private bool _includeElements;
 		private bool _includeBookings;
-
-		public ObjectCountPerAgent()
-		{
-			_includeElementsArg = new GQIBooleanArgument("Include elements");
-			_includeBookingsArg = new GQIBooleanArgument("Include bookings");
-		}
 
 		public GQIArgument[] GetInputArguments()
 		{
@@ -78,7 +72,7 @@ namespace ObjectCountPerAgent
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			_dms = args?.DMS ?? throw new ArgumentNullException($"{nameof(OnInitInputArgs)} or {nameof(GQIDMS)} is null.");
+			_dms = args?.DMS ?? throw new ArgumentException($"{nameof(OnInitInputArgs)} or {nameof(GQIDMS)} is null.");
 			_logger = args.Logger;
 			return null;
 		}
@@ -227,6 +221,7 @@ namespace ObjectCountPerAgent
 			{
 				_rows.Clear();
 			}
+
 			_elementCache.Clear();
 			_dmInfoPerId.Clear();
 

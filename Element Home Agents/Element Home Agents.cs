@@ -36,7 +36,7 @@ namespace ElementHomeAgents
         public OnInitOutputArgs OnInit(OnInitInputArgs args)
         {
             if (args?.DMS == null)
-                throw new ArgumentNullException($"{nameof(OnInitInputArgs)} or {nameof(GQIDMS)} is null.");
+                throw new ArgumentException($"{nameof(OnInitInputArgs)} or {nameof(GQIDMS)} is null.");
 
             _dms = args.DMS;
             _logger = args.Logger;

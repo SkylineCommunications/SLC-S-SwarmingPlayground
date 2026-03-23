@@ -108,13 +108,13 @@ namespace SwarmElements
             {
                 // not valid json, try parse as normal input parameters
                 // eg "789/123, 456/258"
-                var ids = elementKeysRaw
+                var ids = elementKeysRaw?
                     .Replace(" ", string.Empty) // remove spaces
                     .Split(',')
                     .Select(key => ElementID.FromString(key) ?? throw new ArgumentException($"Cannot parse {key} to valid {nameof(ElementID)}"))
                     .ToArray();
 
-                if (ids.Length <= 0)
+                if (ids is null || ids.Length <= 0)
                     engine.ExitFail("Must at least provide one element!");
 
                 return ids;

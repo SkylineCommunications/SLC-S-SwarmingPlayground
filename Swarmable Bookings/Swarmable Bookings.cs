@@ -41,7 +41,7 @@ namespace SwarmableBookings
 
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
-			_dms = args?.DMS ?? throw new ArgumentNullException($"{nameof(OnInitInputArgs)} or {nameof(GQIDMS)} is null.");
+			_dms = args?.DMS ?? throw new ArgumentException($"{nameof(OnInitInputArgs)} or {nameof(GQIDMS)} is null.");
 			_logger = args.Logger;
 			_rmHelper = new ResourceManagerHelper(_dms.SendMessage);
 

@@ -67,7 +67,7 @@
 	        }
 	        catch (JsonSerializationException)
 	        {
-		        swarmEnabled = swarmingFlagRaw.Replace(" ", string.Empty).Split(',').Select(one =>
+		        swarmEnabled = swarmingFlagRaw?.Replace(" ", string.Empty).Split(',').Select(one =>
 		        {
 			        if (!bool.TryParse(one, out var result))
 			        {
@@ -75,7 +75,7 @@
 			        }
 
 			        return result;
-		        }).FirstOrDefault();
+		        })?.FirstOrDefault() ?? false;
 	        }
 
 	        return swarmEnabled;
