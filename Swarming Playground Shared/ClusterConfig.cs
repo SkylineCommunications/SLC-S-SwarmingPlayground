@@ -151,7 +151,7 @@
 		{
 			SwarmItems(_agentToElements, (element, agentId) => element.HostingAgentID == agentId,
 				element => element.Name, element => new ElementID(element.DataMinerID, element.ElementID),
-				(helper, ids, targetAgentId) => helper.SwarmElements(ids.ToArray()).ToAgent(targetAgentId), "element");
+				(helper, ids, targetAgentId) => helper.SwarmElements(ids).ToAgent(targetAgentId), "element");
         }
 
         /// <summary>
@@ -161,7 +161,7 @@
         {
 	        SwarmItems(_agentToBookings, (booking, agentId) => booking.HostingAgentID == agentId,
 		        booking => booking.Name, booking => booking.ID,
-		        (helper, ids, targetAgentId) => helper.SwarmBookings(ids.ToArray()).ToAgent(targetAgentId), "booking");
+		        (helper, ids, targetAgentId) => helper.SwarmBookings(ids).ToAgent(targetAgentId), "booking");
         }
 
         private void SwarmItems<T, TID>(Dictionary<GetDataMinerInfoResponseMessage, List<T>> agentToItems,

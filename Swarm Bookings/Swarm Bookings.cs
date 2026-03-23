@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using Newtonsoft.Json;
 using Skyline.DataMiner.Automation;
-using Skyline.DataMiner.Net;
 using Skyline.DataMiner.Net.Swarming.Helper;
 using Swarming_Playground_Shared;
 
