@@ -61,7 +61,9 @@ namespace SwarmElements
                 engine.ExitFail("Swarming is not enabled in this DMS. More info: https://aka.dataminer.services/Swarming");
 
             var elementKeys = GetElementIDs(engine);
-            int targetAgentId = GetTargetAgentId(engine);
+            var targetAgentId = engine.GetTargetAgentId(PARAM_TARGET_AGENT_ID);
+            if (targetAgentId == -1)
+	            engine.ExitFail("Must provide exactly 1 Target Agent ID!");
 
             if (!agents.Any(agentInfo => agentInfo.ID == targetAgentId))
                 engine.ExitFail($"Target agent '{targetAgentId}' is not part of the cluster");
@@ -118,32 +120,6 @@ namespace SwarmElements
                     engine.ExitFail("Must at least provide one element!");
 
                 return ids;
-            }
-        }
-
-        private int GetTargetAgentId(IEngine engine)
-        {
-            var targetAgentIdRaw = engine.GetScriptParam(PARAM_TARGET_AGENT_ID)?.Value;
-            if (string.IsNullOrWhiteSpace(targetAgentIdRaw))
-                engine.ExitFail("Must provide exactly 1 Target Agent ID!");
-
-            try
-            {
-                // first try as json structure (from low code app)
-                // eg "["123"]"
-                string[] dmaIds = JsonConvert
-                    .DeserializeObject<string[]>(targetAgentIdRaw);
-
-                if (dmaIds.Length != 1)
-                    engine.ExitFail("Must provide exactly 1 Target Agent ID!");
-
-                return int.Parse(dmaIds.First());
-            }
-            catch (JsonSerializationException)
-            {
-                // not valid json, try parse as normal input parameters
-                // eg "789"
-                return int.Parse(targetAgentIdRaw);
             }
         }
     }
