@@ -29,6 +29,7 @@ namespace ObjectCountPerAgent
 			new GQIIntColumn("Total Element Count"),
 			new GQIIntColumn("Non-Swarmable Element Count"),
 			new GQIIntColumn("Swarmable Element Count"),
+			new GQIIntColumn("Scheduled Task Count"),
 		};
 
 		public GQIColumn[] GetColumns() => _columns;
@@ -54,18 +55,22 @@ namespace ObjectCountPerAgent
 
 		private readonly GQIArgument<bool> _includeElementsArg = new GQIBooleanArgument("Include elements");
 		private readonly GQIArgument<bool> _includeBookingsArg = new GQIBooleanArgument("Include bookings");
+		private readonly GQIArgument<bool> _includeScheduledTasksArg = new GQIBooleanArgument("Include scheduled tasks");
+
 		private bool _includeElements;
 		private bool _includeBookings;
+		private bool _includeScheduledTasks;
 
 		public GQIArgument[] GetInputArguments()
 		{
-			return new GQIArgument[] { _includeElementsArg, _includeBookingsArg };
+			return new GQIArgument[] { _includeElementsArg, _includeBookingsArg, _includeScheduledTasksArg };
 		}
 
 		public OnArgumentsProcessedOutputArgs OnArgumentsProcessed(OnArgumentsProcessedInputArgs args)
 		{
 			_includeElements = args.GetArgumentValue(_includeElementsArg);
 			_includeBookings = args.GetArgumentValue(_includeBookingsArg);
+			_includeScheduledTasks = args.GetArgumentValue(_includeScheduledTasksArg);
 
 			return null;
 		}
@@ -179,6 +184,19 @@ namespace ObjectCountPerAgent
 					}
 				}
 
+				if (_includeScheduledTasks)
+				{
+					// Get Scheduled Tasks
+					var msg = new GetInfoMessage(InfoType.SchedulerTasks);
+					var resp = _dms.SendMessage(msg) as GetSchedulerTasksResponseMessage;
+					var tasks = resp?.Tasks?.OfType<SchedulerTask>().ToArray();
+
+					lock (_rows)
+					{
+						ApplyScheduledTasks(tasks);
+					}
+				}
+
 				sw.Stop();
 				_logger.Debug($"Initial fetch completed in {sw.ElapsedMilliseconds}ms");
 
@@ -278,6 +296,16 @@ namespace ObjectCountPerAgent
 			{
 				var row = GetOrCreateRow(b.HostingAgentID);
 				row.TotalBookingCount++;
+			}
+		}
+
+		private void ApplyScheduledTasks(SchedulerTask[] tasks)
+		{
+			var tasksByDma = tasks.GroupBy(one => one.ExecutingDmaId);
+			foreach (var item in tasksByDma)
+			{
+				var row = GetOrCreateRow(item.Key);
+				row.TotalScheduledTaskCount = item.Count();
 			}
 		}
 
@@ -508,6 +536,8 @@ namespace ObjectCountPerAgent
 			public int TotalElementCount { get; set; }
 			public int NonSwarmableElementCount { get; set; }
 			public int SwarmableElementCount { get; set; }
+			public int TotalScheduledTaskCount { get; set; }
+
 
 			public GQIRow ToGQI()
 			{
@@ -522,6 +552,7 @@ namespace ObjectCountPerAgent
 						new GQICell { Value = TotalElementCount },
 						new GQICell { Value = NonSwarmableElementCount },
 						new GQICell { Value = SwarmableElementCount },
+						new GQICell { Value = TotalScheduledTaskCount },
 					}
 				);
 			}

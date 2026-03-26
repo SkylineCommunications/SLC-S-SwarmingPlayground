@@ -80,5 +80,37 @@
 
 	        return swarmEnabled;
         }
+
+        /// <summary>
+        /// Parses the input parameter to the target agent ID. Returns -1 when input was invalid.
+        /// </summary>
+        /// <param name="engine"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        public static int GetTargetAgentId(this IEngine engine, string param)
+        {
+	        var targetAgentIdRaw = engine.GetScriptParam(param)?.Value;
+	        if (string.IsNullOrWhiteSpace(targetAgentIdRaw))
+		        return -1;
+
+	        try
+	        {
+		        // first try as json structure (from low code app)
+		        // eg "["123"]"
+		        var dmaIds = JsonConvert
+			        .DeserializeObject<string[]>(targetAgentIdRaw);
+
+		        if (dmaIds.Length != 1)
+			        return -1;
+
+		        return int.Parse(dmaIds.First());
+	        }
+	        catch (JsonSerializationException)
+	        {
+		        // not valid json, try parse as normal input parameters
+		        // eg "789"
+		        return int.Parse(targetAgentIdRaw);
+	        }
+        }
 	}
 }
