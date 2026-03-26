@@ -20,7 +20,6 @@ namespace SwarmScheduledTasks
 		private const string ParamScheduledTaskIds = "Scheduled Task IDs";
 		private const string ParamTargetAgentId = "Target Agent ID";
 
-
 		/// <summary>
 		/// The script entry point.
 		/// </summary>
@@ -155,7 +154,7 @@ namespace SwarmScheduledTasks
 
 				return dmaIds.Select((t, i) => new ScheduledTaskID(t, taskIds[i])).ToArray();
 
-				int[] Parse(string s) => s.Replace(" ", "").Split(',')
+				int[] Parse(string s) => s.Replace(" ", string.Empty).Split(',')
 					.Select(int.Parse)
 					.ToArray();
 			}

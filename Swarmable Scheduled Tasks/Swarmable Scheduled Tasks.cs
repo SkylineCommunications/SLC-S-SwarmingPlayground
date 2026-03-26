@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Skyline.DataMiner.Analytics.GenericInterface;
+using Skyline.DataMiner.Net.DMSState.Agents;
 using Skyline.DataMiner.Net.Exceptions;
 using Skyline.DataMiner.Net.Messages;
 
@@ -21,7 +22,6 @@ namespace SwarmableScheduledTasks
 		private List<SchedulerTask> _cachedTasks;
 		private const int PageSize = 50;
 		private int _currentIndex;
-
 
 		public GQIColumn[] GetColumns()
 		{
@@ -48,8 +48,6 @@ namespace SwarmableScheduledTasks
 
 		public GQIPage GetNextPage(GetNextPageInputArgs args)
 		{
-			_logger.Debug(nameof(GetNextPage));
-
 			if (_cachedTasks == null)
 			{
 				var msg = new GetInfoMessage(InfoType.SchedulerTasks);
@@ -69,12 +67,12 @@ namespace SwarmableScheduledTasks
 
 			if (_currentIndex >= _cachedTasks.Count)
 			{
-				return new GQIPage(new GQIRow[] { });
+				return new GQIPage(new GQIRow[] { }) {HasNextPage = false};
 			}
 
 			var rows = _cachedTasks.Skip(_currentIndex).Take(PageSize).Select(CreateRow).ToArray();
 			_currentIndex += PageSize;
-			return new GQIPage(rows) {HasNextPage = true};
+			return new GQIPage(rows) {HasNextPage = _currentIndex < _cachedTasks.Count};
 		}
 
 		private void GetAgentsInCluster()
@@ -97,11 +95,7 @@ namespace SwarmableScheduledTasks
 
 		private GQIRow CreateRow(SchedulerTask task)
 		{
-			if (!_dmInfoPerId.TryGetValue(task.ExecutingDmaId, out var dmaInfo))
-			{
-				GetAgentsInCluster();
-				_dmInfoPerId.TryGetValue(task.ExecutingDmaId, out dmaInfo);
-			}
+			_dmInfoPerId.TryGetValue(task.ExecutingDmaId, out var dmaInfo);
 
 			var cells = new GQICell[]
 			{
