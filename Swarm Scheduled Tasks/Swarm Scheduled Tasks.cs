@@ -106,7 +106,7 @@ namespace SwarmScheduledTasks
 				What = (int)SchedulerInfoTypes.GetConfig,
 			};
 
-			var resp = _engine.SendSLNetSingleResponseMessage(msg) as GetSchedulerInfoResponseMessage;
+			var resp = _engine.GetUserConnection().HandleSingleResponseMessage(msg) as GetSchedulerInfoResponseMessage;
 			if (resp == null || resp.psaRet?.Psa?.Length == 0)
 			{
 				return string.Empty;

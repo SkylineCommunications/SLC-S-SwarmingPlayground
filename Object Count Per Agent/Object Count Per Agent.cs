@@ -189,7 +189,7 @@ namespace ObjectCountPerAgent
 					// Get Scheduled Tasks
 					var msg = new GetInfoMessage(InfoType.SchedulerTasks);
 					var resp = _dms.SendMessage(msg) as GetSchedulerTasksResponseMessage;
-					var tasks = resp?.Tasks?.OfType<SchedulerTask>().ToArray();
+					var tasks = resp?.Tasks.OfType<SchedulerTask>().ToArray();
 
 					lock (_rows)
 					{
