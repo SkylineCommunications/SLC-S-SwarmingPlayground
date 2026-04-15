@@ -16,7 +16,6 @@ namespace SwarmableScheduledTasks
 	public sealed class SwarmableScheduledTasks : IGQIDataSource, IGQIOnInit
 	{
 		private GQIDMS _dms;
-		private IGQILogger _logger;
 		private readonly ConcurrentDictionary<string, GQIRow> _currentRows = new ConcurrentDictionary<string, GQIRow>();
 		private Dictionary<int, GetDataMinerInfoResponseMessage> _dmInfoPerId = new Dictionary<int, GetDataMinerInfoResponseMessage>();
 		private List<SchedulerTask> _cachedTasks;
@@ -39,7 +38,6 @@ namespace SwarmableScheduledTasks
 		public OnInitOutputArgs OnInit(OnInitInputArgs args)
 		{
 			_dms = args?.DMS ?? throw new ArgumentNullException($"{nameof(OnInitInputArgs)} or {nameof(GQIDMS)} is null.");
-			_logger = args?.Logger;
 
 			GetAgentsInCluster();
 

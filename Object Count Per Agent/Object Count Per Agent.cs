@@ -243,7 +243,10 @@ namespace ObjectCountPerAgent
 			_elementCache.Clear();
 			_dmInfoPerId.Clear();
 
-			while (_queuedUpdates.TryDequeue(out _)) { }
+			while (_queuedUpdates.TryDequeue(out _))
+			{
+				// Intentionally draining the queue
+			}
 		}
 
 		private RowData GetOrCreateRow(int agentId)
